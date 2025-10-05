@@ -1,11 +1,13 @@
 export const sampleProducts = [
   {
     id: '1',
-    modelNumber: 'XR-450M',
-    description: 'High-Performance Industrial Router',
-    category: 'Networking',
-    price: '$1,299.00',
-    inStock: true
+    modelNumber: 'WRT318FZDM',
+    description: 'Whirlpool refer',
+    serialNumber: 'Serial Empty',
+    orderNumber: '0011310001',
+    customerNumber: '10001',
+    customerName: 'Flack, Jackson',
+    salesman: '301'
   },
   {
     id: '2',

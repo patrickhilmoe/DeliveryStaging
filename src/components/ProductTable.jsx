@@ -119,14 +119,12 @@ export const ProductTable = ({
                   onClick={() => handleSort('category')}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
-                  Category
+                  Serial Number
                   {sortBy === 'category' && (
                     <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left font-medium text-gray-700">Price</th>
-              <th className="px-6 py-4 text-left font-medium text-gray-700">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -149,21 +147,7 @@ export const ProductTable = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-gray-700">{product.description}</td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {product.category}
-                  </span>
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900">{product.price}</td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    product.inStock
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </td>
+                <td className="px-6 py-4 text-gray-700">{product.serialNumber}</td>
               </tr>
             ))}
           </tbody>
