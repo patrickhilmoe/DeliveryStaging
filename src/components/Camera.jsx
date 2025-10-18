@@ -44,22 +44,22 @@ export const Camera = ({
                 Selected Product
               </h3>
               <p className="text-blue-600 font-mono font-medium">
-                {selectedProduct.modelNumber}
+                {selectedProduct.StockShipped}
+              </p>
+              {/* <p className="text-gray-600 text-sm">
+                {selectedProduct.Description1}
+              </p> */}
+              <p className="text-gray-600 text-sm">
+                {selectedProduct.OrderNumber}
               </p>
               <p className="text-gray-600 text-sm">
-                {selectedProduct.description}
+                C# {selectedProduct.CustomerNumber}
               </p>
               <p className="text-gray-600 text-sm">
-                {selectedProduct.orderNumber}
+                Name: {selectedProduct.CustomerName}
               </p>
               <p className="text-gray-600 text-sm">
-                C# {selectedProduct.customerNumber}
-              </p>
-              <p className="text-gray-600 text-sm">
-                Name: {selectedProduct.customerName}
-              </p>
-              <p className="text-gray-600 text-sm">
-                Salesman: {selectedProduct.salesman}
+                Salesman: {selectedProduct.Salesperson}
               </p>
             </div>
             <button

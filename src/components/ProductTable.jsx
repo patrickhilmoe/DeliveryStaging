@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Package, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo } from "react";
+import { Search, Package, CheckCircle, AlertCircle } from "lucide-react";
+import { onSnapshot, collection } from "firebase/firestore";
 
 export const ProductTable = ({
   products,
@@ -7,47 +8,55 @@ export const ProductTable = ({
   onSearchChange,
   matchedProducts,
   selectedProduct,
-  onProductSelect
+  onProductSelect,
+  db,
+  serialMatch
 }) => {
-  const [sortBy, setSortBy] = useState('modelNumber');
-  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortBy, setSortBy] = useState("StockShipped");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const sortedAndFilteredProducts = useMemo(() => {
-    let filtered = products;
-    
+const list = Array.isArray(products) ? products : [];
+
+    let filtered = list;
+
     if (searchQuery) {
-      filtered = products.filter(product =>
-        product.modelNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = products.filter(
+        (product) =>
+          product.StockShipped
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          product.Description1
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) 
+          //|| product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
     return filtered.sort((a, b) => {
       const aValue = a[sortBy].toLowerCase();
       const bValue = b[sortBy].toLowerCase();
       const comparison = aValue.localeCompare(bValue);
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === "asc" ? comparison : -comparison;
     });
   }, [products, searchQuery, sortBy, sortOrder]);
 
   const handleSort = (column) => {
     if (sortBy === column) {
-      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(column);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
   const getRowClassName = (modelNumber) => {
     if (selectedProduct?.modelNumber === modelNumber) {
-      return 'bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300';
+      return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
     }
     if (matchedProducts.includes(modelNumber)) {
-      return 'bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200';
+      return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
     }
-    return 'bg-white hover:bg-gray-50 cursor-pointer';
+    return "bg-white hover:bg-gray-50 cursor-pointer";
   };
 
   const getMatchIcon = (modelNumber) => {
@@ -59,6 +68,7 @@ export const ProductTable = ({
     }
     return null;
   };
+  const collectionName = "2025-10-5";
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -69,13 +79,19 @@ export const ProductTable = ({
             Product Database
           </h2>
           {matchedProducts.length > 0 && (
+            <> 
             <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
               <AlertCircle className="w-4 h-4" />
-              {matchedProducts.length} match{matchedProducts.length !== 1 ? 'es' : ''} found
+              Model Number {matchedProducts} confirmed
             </div>
+            <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              <AlertCircle className="w-4 h-4" />
+              Serial Number {serialMatch} confirmed
+            </div>
+            </>
           )}
         </div>
-        
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -94,62 +110,112 @@ export const ProductTable = ({
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort('modelNumber')}
+                  onClick={() => handleSort("modelNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Model Number
-                  {sortBy === 'modelNumber' && (
-                    <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  {sortBy === "modelNumber" && (
+                    <span className="text-xs">
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </span>
                   )}
                 </button>
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort('description')}
+                  onClick={() => handleSort("description")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Description
-                  {sortBy === 'description' && (
-                    <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  {sortBy === "description" && (
+                    <span className="text-xs">
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </span>
                   )}
                 </button>
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort('category')}
+                  onClick={() => handleSort("QuantityToShip")}
+                  className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Quantity
+                  {sortBy === "QuantityToShip" && (
+                    <span className="text-xs">
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </span>
+                  )}
+                </button>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <button
+                  onClick={() => handleSort("LocationNumber")}
+                  className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Location
+                  {sortBy === "LocationNumber" && (
+                    <span className="text-xs">
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </span>
+                  )}
+                </button>
+              </th>
+              <th className="px-6 py-4 text-left">
+                <button
+                  onClick={() => handleSort("category")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Serial Number
-                  {sortBy === 'category' && (
-                    <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  {sortBy === "category" && (
+                    <span className="text-xs">
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </span>
                   )}
                 </button>
               </th>
             </tr>
           </thead>
           <tbody>
-            {sortedAndFilteredProducts.map((product, index) => (
+            {sortedAndFilteredProducts.length > 0 ? sortedAndFilteredProducts.map((product, index) => (
               <tr
                 key={product.id}
                 onClick={() => onProductSelect(product)}
-                className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(product.modelNumber)}`}
+                className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
+                  product.StockShipped
+                )}`}
                 style={{
                   animationDelay: `${index * 50}ms`,
-                  animation: 'fadeIn 0.3s ease-out forwards'
+                  animation: "fadeIn 0.3s ease-out forwards",
                 }}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-medium text-gray-900">
-                      {product.modelNumber}
+                      {product.StockShipped}
                     </span>
-                    {getMatchIcon(product.modelNumber)}
+                    {getMatchIcon(product.StockShipped)}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-gray-700">{product.description}</td>
-                <td className="px-6 py-4 text-gray-700">{product.serialNumber}</td>
+                <td className="px-6 py-4 text-gray-700">
+                  {product.Description1}
+                </td>
+                <td className="px-6 py-4 text-gray-700">
+                  {product.QuantityToShip}
+                </td>
+                <td className="px-6 py-4 text-gray-700">
+                  {product.LocationNumber}
+                </td>
+                <td className="px-6 py-4 text-gray-700">
+                  {product.serialNumber}
+                </td>
               </tr>
-            ))}
+            )) : (
+              <tr>
+                <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                  No products to display.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
