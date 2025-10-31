@@ -3,42 +3,60 @@ import { useRef } from "react";
 import { Calendar } from "lucide-react";
 import { collection, addDoc } from "firebase/firestore";
 
-export const ExcelUpload = ({stock, setStock, blur, setBlur, stageList, setStageList, selectedDate, setSelectedDate, visibleTest, setVisibileTest, db, uploadData}) => {
-
-    // Generate past dates for the dropdown (last 30 days)
+export const ExcelUpload = ({
+  stock,
+  setStock,
+  blur,
+  setBlur,
+  stageList,
+  setStageList,
+  selectedDate,
+  setSelectedDate,
+  visibleTest,
+  setVisibileTest,
+  db,
+  uploadData,
+}) => {
+  // Generate past dates for the dropdown (last 30 days)
   const generatePastDates = () => {
     const dates = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       dates.push({
-        value: date.toISOString().split('T')[0],
-        label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric' 
-        })
+        value: date.toISOString().split("T")[0],
+        label:
+          i === 0
+            ? "Today"
+            : i === 1
+            ? "Yesterday"
+            : date.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              }),
       });
     }
     return dates;
   };
+  console.log("Selected date is:", selectedDate);
 
   const pastDates = generatePastDates();
 
-const fileRef = useRef(null);
-const fileRef2 = useRef(null);
+  const fileRef = useRef(null);
+  const fileRef2 = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file) readExcel(file);
   };
 
-    const handleFileChange2 = (event) => {
+  const handleFileChange2 = (event) => {
     const file = event.target.files?.[0];
     if (file) readExcel2(file);
   };
 
-    const readExcel = async (file) => {
+  const readExcel = async (file) => {
     try {
       const data = await new Promise((resolve, reject) => {
         const fileReader = new FileReader();
@@ -63,22 +81,22 @@ const fileRef2 = useRef(null);
       });
 
       // **Note to Self: will this be too slow to process?
-          let id = 0;
-    let updatedKeyStockArr = [];
-        data.forEach(item => {
-      let updatedKeysStockObj = {};
-      for (const key in item) {
-        // console.log("Original Key:", key);
-        const updatedKey = key.replace(/[#\s]/g, "");
-        // console.log("Updated Key:", updatedKey);
-        updatedKeysStockObj[updatedKey] = item[key];
-      }
-      updatedKeysStockObj.id = id++;
-      updatedKeyStockArr.push(updatedKeysStockObj);
-    });
+      let id = 0;
+      let updatedKeyStockArr = [];
+      data.forEach((item) => {
+        let updatedKeysStockObj = {};
+        for (const key in item) {
+          // console.log("Original Key:", key);
+          const updatedKey = key.replace(/[#\s]/g, "");
+          // console.log("Updated Key:", updatedKey);
+          updatedKeysStockObj[updatedKey] = item[key];
+        }
+        updatedKeysStockObj.id = id++;
+        updatedKeyStockArr.push(updatedKeysStockObj);
+      });
       setStock(updatedKeyStockArr);
-    console.log("updated data:", updatedKeyStockArr);
-    //   setBlur(!blur);
+      console.log("updated data:", updatedKeyStockArr);
+      //   setBlur(!blur);
     } catch (err) {
       console.error("Failed to read Excel file:", err);
     }
@@ -117,46 +135,58 @@ const fileRef2 = useRef(null);
 
   return (
     <>
-     {/* Date Selector */}
-        <div className="mb-2 justify-between">
-          <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-200 w-fit">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            <div className="flex items-center gap-2">
-              <label htmlFor="date-select" className="text-sm font-medium text-gray-700">
-                Scan Date:
-              </label>
-              <select
-                id="date-select"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-transparent border-none text-sm font-medium text-gray-800 focus:outline-none focus:ring-0 cursor-pointer"
-              >
-                {pastDates.map((date) => (
-                  <option key={date.value} value={date.value}>
-                    {date.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* Date Selector */}
+      <div className="mb-2 justify-between">
+        <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-200 w-fit">
+          <Calendar className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="date-select"
+              className="text-sm font-medium text-gray-700"
+            >
+              Scan Date:
+            </label>
+            <select
+              id="date-select"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-transparent border-none text-sm font-medium text-gray-800 focus:outline-none focus:ring-0 cursor-pointer"
+            >
+              {pastDates.map((date) => (
+                <option key={date.value} value={date.value}>
+                  {date.label}
+                </option>
+              ))}
+            </select>
+            <input
+              id="date-input"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-transparent border border-gray-300 rounded px-2 py-1 text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         </div>
-    <div style={{display: visibleTest ? 'none' : 'flex'}} >
-        <button className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            onClick={() => fileRef2.current.click()}
-            >
-      Upload Staging List
-    </button>
-    </div>
-    <div style={{display: visibleTest ? 'none' : 'flex'}} >
-    <button className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            onClick={() => fileRef.current.click()}
-            >
-      Upload TS Stock File
-    </button>
-    </div>
+      </div>
+      <div style={{ display: visibleTest ? "none" : "flex" }}>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+          onClick={() => fileRef2.current.click()}
+        >
+          Upload Staging List
+        </button>
+      </div>
+      <div style={{ display: visibleTest ? "none" : "flex" }}>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+          onClick={() => fileRef.current.click()}
+        >
+          Upload TS Stock File
+        </button>
+      </div>
 
-     {/*Hidden file inputs*/}
-     {/* handle stock list upload */}
+      {/*Hidden file inputs*/}
+      {/* handle stock list upload */}
       <input
         ref={fileRef}
         type="file"
@@ -165,13 +195,13 @@ const fileRef2 = useRef(null);
         className="hidden"
       />
       {/* handle staging list upload */}
-            <input
+      <input
         ref={fileRef2}
         type="file"
         accept=".xlsx,.xls,.csv"
         onChange={handleFileChange2}
         className="hidden"
       />
-      </>
+    </>
   );
 };

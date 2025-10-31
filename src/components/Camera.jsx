@@ -22,8 +22,8 @@ export const Camera = ({
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
-      // onCapture(file);
-      analyzeImage(file);
+      onCapture(file, selectedProduct.id);
+      // analyzeImage(file);
     }
   };
 

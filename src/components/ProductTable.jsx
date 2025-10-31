@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Search, Package, CheckCircle, AlertCircle } from "lucide-react";
+import { Search, Package, CheckCircle, AlertCircle, Save, CreditCard as Edit3 } from "lucide-react";
 import { onSnapshot, collection } from "firebase/firestore";
 
 export const ProductTable = ({
@@ -10,26 +10,28 @@ export const ProductTable = ({
   selectedProduct,
   onProductSelect,
   db,
-  serialMatch
+  serialMatch,
+  onSerialNumberUpdate,
+  selectedDate
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [editingSerial, setEditingSerial] = useState({});
+  const [serialInputs, setSerialInputs] = useState({});
 
   const sortedAndFilteredProducts = useMemo(() => {
-const list = Array.isArray(products) ? products : [];
+    const list = Array.isArray(products) ? products : [];
 
     let filtered = list;
 
     if (searchQuery) {
       filtered = products.filter(
         (product) =>
-          product.StockShipped
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          product.Description1
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) 
-          //|| product.category.toLowerCase().includes(searchQuery.toLowerCase())
+          product.StockShipped.toLowerCase().includes(
+            searchQuery.toLowerCase()
+          ) ||
+          product.Description1.toLowerCase().includes(searchQuery.toLowerCase())
+        //|| product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return filtered.sort((a, b) => {
@@ -68,7 +70,28 @@ const list = Array.isArray(products) ? products : [];
     }
     return null;
   };
-  const collectionName = "2025-10-5";
+  const collectionName = selectedDate;
+
+  // serial editing below
+  const handleSerialEdit = (productId, currentSerial) => {
+    setEditingSerial((prev) => ({ ...prev, [productId]: true }));
+    setSerialInputs((prev) => ({ ...prev, [productId]: currentSerial }));
+  };
+
+  const handleSerialSave = (productId) => {
+    const newSerial = serialInputs[productId] || "";
+    onSerialNumberUpdate(productId, newSerial, collectionName);
+    setEditingSerial((prev) => ({ ...prev, [productId]: false }));
+  };
+
+  const handleSerialCancel = (productId) => {
+    setEditingSerial((prev) => ({ ...prev, [productId]: false }));
+    setSerialInputs((prev) => ({ ...prev, [productId]: "" }));
+  };
+
+  const handleSerialInputChange = (productId, value) => {
+    setSerialInputs((prev) => ({ ...prev, [productId]: value }));
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -79,15 +102,15 @@ const list = Array.isArray(products) ? products : [];
             Product Database
           </h2>
           {matchedProducts.length > 0 && (
-            <> 
-            <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-              <AlertCircle className="w-4 h-4" />
-              Model Number {matchedProducts} confirmed
-            </div>
-            <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-              <AlertCircle className="w-4 h-4" />
-              Serial Number {serialMatch} confirmed
-            </div>
+            <>
+              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                <AlertCircle className="w-4 h-4" />
+                Model Number {matchedProducts} confirmed
+              </div>
+              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                <AlertCircle className="w-4 h-4" />
+                Serial Number {serialMatch} confirmed
+              </div>
             </>
           )}
         </div>
@@ -176,40 +199,85 @@ const list = Array.isArray(products) ? products : [];
             </tr>
           </thead>
           <tbody>
-            {sortedAndFilteredProducts.length > 0 ? sortedAndFilteredProducts.map((product, index) => (
-              <tr
-                key={product.id}
-                onClick={() => onProductSelect(product)}
-                className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                  product.StockShipped
-                )}`}
-                style={{
-                  animationDelay: `${index * 50}ms`,
-                  animation: "fadeIn 0.3s ease-out forwards",
-                }}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-gray-900">
-                      {product.StockShipped}
-                    </span>
-                    {getMatchIcon(product.StockShipped)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-gray-700">
-                  {product.Description1}
-                </td>
-                <td className="px-6 py-4 text-gray-700">
-                  {product.QuantityToShip}
-                </td>
-                <td className="px-6 py-4 text-gray-700">
-                  {product.LocationNumber}
-                </td>
-                <td className="px-6 py-4 text-gray-700">
-                  {product.serialNumber}
-                </td>
-              </tr>
-            )) : (
+            {sortedAndFilteredProducts.length > 0 ? (
+              sortedAndFilteredProducts.map((product, index) => (
+                <tr
+                  key={product.id}
+                  onClick={() => onProductSelect(product)}
+                  className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
+                    product.StockShipped
+                  )}`}
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animation: "fadeIn 0.3s ease-out forwards",
+                  }}
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-medium text-gray-900">
+                        {product.StockShipped}
+                      </span>
+                      {getMatchIcon(product.StockShipped)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {product.Description1}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {product.QuantityToShip}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {product.LocationNumber}
+                  </td>
+                  {/* added serial number editing below */}
+                  <td className="px-6 py-4">
+                    {editingSerial[product.id] ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={serialInputs[product.id] || ""}
+                          onChange={(e) =>
+                            handleSerialInputChange(product.id, e.target.value)
+                          }
+                          className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter serial..."
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleSerialSave(product.id)}
+                          className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                          title="Save"
+                        >
+                          <Save className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleSerialCancel(product.id)}
+                          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                          title="Cancel"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm text-gray-700 min-w-[100px]">
+                          {product.SerialNumber || "Not set"}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleSerialEdit(product.id, product.SerialNumber)
+                          }
+                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Edit serial number"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
                   No products to display.
