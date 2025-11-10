@@ -18,33 +18,34 @@ export const ExcelUpload = ({
   uploadData,
 }) => {
   // Generate past dates for the dropdown (last 30 days)
-  const generatePastDates = () => {
-    const dates = [];
-    for (let i = 0; i < 10; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      dates.push({
-        value: date.toISOString().split("T")[0],
-        label:
-          i === 0
-            ? "Today"
-            : i === 1
-            ? "Yesterday"
-            : date.toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              }),
-      });
-    }
-    return dates;
-  };
-  console.log("Selected date is:", selectedDate);
+//   const generatePastDates = () => {
+//     const dates = [];
+//     for (let i = 0; i < 10; i++) {
+//       const date = new Date();
+//       date.setDate(date.getDate() - i);
+//       dates.push({
+//         value: date.toISOString().split("T")[0],
+//         label:
+//           i === 0
+//             ? "Today"
+//             : i === 1
+//             ? "Yesterday"
+//             : date.toLocaleDateString("en-US", {
+//                 weekday: "short",
+//                 month: "short",
+//                 day: "numeric",
+//               }),
+//       });
+//     }
+//     return dates;
+//   };
+//   console.log("Selected date is:", selectedDate);
 
-  const pastDates = generatePastDates();
+//   const pastDates = generatePastDates();
 
   const fileRef = useRef(null);
   const fileRef2 = useRef(null);
+  const fileRef3 = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -144,9 +145,9 @@ export const ExcelUpload = ({
               htmlFor="date-select"
               className="text-sm font-medium text-gray-700"
             >
-              Scan Date:
+              Date:
             </label>
-            <select
+            {/* <select
               id="date-select"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -157,7 +158,7 @@ export const ExcelUpload = ({
                   {date.label}
                 </option>
               ))}
-            </select>
+            </select> */}
             <input
               id="date-input"
               type="date"

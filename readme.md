@@ -1,21 +1,6 @@
-# OCR Appliance Model and Serial Number Scanner
+# Delivery Staging OCR App
 
-notes:
-logic - update date drop down
+Description
+This is an app used for verifying model and serial numbers on appliances that are staged for the next day's deliveries. It uses Optical Character Recognition (OCR) to verify the product and stores the serial number in a Firebase database, showing real-time data.
 
-
-logic/layout - handling multiple quantities
-    - store as an object array?
-
-layout - sort lines based on name & location
-
-logic/layout - how to add indiviual line updates? 
-    excel docUpdate from PC?
-
-logic - model number issues
-    - ones with eg. "01"
-    - miele missing entrie chuncks of the model number - reverse search based on matchin serial number?
-
-finalizing project
-update the Readme file for what the project is doing
-add test excel files and images for someone to critique the project
+The app used bolt.new to AI generate the layout and main function. It has been tailored specifically for the company that uses it.

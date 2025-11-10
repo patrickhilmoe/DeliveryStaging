@@ -3,6 +3,7 @@ import { Camera as CameraIcon, Database, X } from "lucide-react";
 
 export const Camera = ({
   onCapture,
+  onCaptureSN,
   isProcessing,
   analyzeImage,
   selectedProduct,
@@ -10,6 +11,7 @@ export const Camera = ({
 }) => {
   /*camera */
   const cameraInputRef = useRef(null);
+  const cameraInputRefSN = useRef(null);
 
   const handleCameraCapture = () => {
     if (selectedProduct === null) {
@@ -19,10 +21,26 @@ export const Camera = ({
     cameraInputRef.current?.click();
   };
 
+  const handleCameraCaptureSN = () => {
+    if (selectedProduct === null) {
+      alert("Please select a product first.");
+      return;
+    }
+    cameraInputRefSN.current?.click();
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onCapture(file, selectedProduct.id);
+      // analyzeImage(file);
+    }
+  };
+
+    const handleFileChangeSN = (event) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      onCaptureSN(file, selectedProduct.id);
       // analyzeImage(file);
     }
   };
@@ -70,22 +88,42 @@ export const Camera = ({
             </button>
           </div>
         )}
-        <button
-          onClick={handleCameraCapture}
-          disabled={isProcessing}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-        >
-          <CameraIcon className="w-5 h-5" />
-          Start Camera
-        </button>
+          <>
+            <button
+              onClick={handleCameraCapture}
+              disabled={isProcessing}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <CameraIcon className="w-5 h-5" />
+              Take Model/SN Picture
+            </button>
+            <button
+              onClick={handleCameraCaptureSN}
+              disabled={isProcessing}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <CameraIcon className="w-5 h-5" />
+              Take S/N Picture
+            </button>
+          </>
       </div>
       {/* Hidden file inputs */}
+      {/* model and serial number capture */}
       <input
         ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={handleFileChange}
+        className="hidden"
+      />
+      {/* serial number capture */}
+      <input
+        ref={cameraInputRefSN}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileChangeSN}
         className="hidden"
       />
     </div>

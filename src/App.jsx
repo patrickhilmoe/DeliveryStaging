@@ -116,10 +116,17 @@ function App() {
     return newDate;
   };
 
+  const serialPlaceholder = "Not Set Yet"
+
   const uploadData = (data) => {
     console.log("Uploading data...", data);
     // Clean keys of stock data from Excel upload
-    let id = 0;
+    let id = 0
+    if (!(stageList.length === 0)) {
+      id = stageList.length;
+      // console.log("id length is: ", id)
+      // todo: error handling to avoid accidental duplicates
+    }
     let updatedKeyStockArr = [];
     data.forEach((item) => {
       let updatedKeysStockObj = {};
@@ -130,7 +137,16 @@ function App() {
         updatedKeysStockObj[updatedKey] = item[key];
       }
       updatedKeysStockObj.id = id++;
-      updatedKeysStockObj.SerialNumber = ""; // add empty SN field for later update
+      updatedKeysStockObj.SerialNumber = []; // add empty SN field for later update
+      // crete and object with multiple serial numbers if quantity > 1
+      const qty = Number(updatedKeysStockObj.QuantityToShip);
+      console.log("Quantity to ship is:", updatedKeysStockObj.QuantityToShip, "and type is:", typeof qty);
+      console.log("updated object looks like this: ", updatedKeysStockObj);
+      // updatedKeysStockObj.SerialNumber = Array.from({length: qty}, (_, i) => ({ id: i, serial: "Not Set Yet" }));
+        for (let i = 1; i <= qty; i++) {
+          // let sn = {id: i - 1, serial: "Not Set Yet"};
+          updatedKeysStockObj.SerialNumber.push(serialPlaceholder);
+        }
       updatedKeyStockArr.push(updatedKeysStockObj);
     });
     const date = updatedKeyStockArr[0].ShippingDate;
@@ -366,6 +382,29 @@ function App() {
     return null;
   }
 
+    function matchSerial2(text, stockMatchArray) {
+    if (!Array.isArray(text) || !Array.isArray(stockMatchArray)) return null;
+
+    for (const tsSerial of stockMatchArray) {
+      for (const item of text) {
+        // item may be a string or an object like { description: "..." }
+
+        const value = typeof item === "string" ? item : item?.description;
+        if (!value) continue;
+        console.log("ts trackingnum: ", tsSerial.TrackingNumber, "and ocr num: ", value)
+        if (tsSerial.TrackingNumber === value) {
+          console.log("Serial unit found:", item);
+          console.log("Serial unit found in TS:", tsSerial);
+          setSerialMatch(value);
+          console.log("Serial matched set to state:", value);
+          return tsSerial;
+        }
+      }
+    }
+
+    return null;
+  }
+
   const productModels = sampleProducts.map((product) => product.modelNumber);
 
   const handleCapture = useCallback(async (imageData, productId) => {
@@ -379,32 +418,89 @@ function App() {
       setExtractedText(text);
 
       setProcessingStatus("Finding matches...");
-      const match = matchProduct(text);
-      setModelMatch(match);
-      if (!match) {
-        alert("No matching model number found in the image.");
-        return;
-      }
-      console.log("Model matched is:", match);
-      // await localModelMatch(match);
-      // console.log("Local model match is:", localMatch);
-      // setMatchedProducts(match);
-      setMatchedProducts(match ? [match] : []);
-      console.log("Matched products:", match);
-      // store array of the matched model number from the Serial Number Stcok
-      const stockMatchArray = localModelMatch(match);
-      console.log("Local stored matches:", stockMatchArray);
-      // match OCR text array with model matched SN Stock array
-      const matchingSerial = matchSerial(text, stockMatchArray);
+      // if the model has its picture taken but need the serial number. bypass matching model number
+      let matchingSerial = "";
+      if (!modelMatch) {
+        const match = matchProduct(text);
+        setModelMatch(match);
+        if (!match) {
+          alert("No matching model number found in the image.");
+          return;
+        }
+        console.log("Model matched is:", match);
+        setMatchedProducts(match ? [match] : []);
+        console.log("Matched products:", match);
+        // store array of the matched model number from the Serial Number Stcok
+        const stockMatchArray = localModelMatch(match);
+        console.log("Local stored matches:", stockMatchArray);
+        matchingSerial = matchSerial(text, stockMatchArray);
       if (!matchingSerial) {
+        console.log("triggering here")
+        stockMatchArray.length === 0 ?
+        alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
         alert("No matching serial number found in the image.");
         return;
       };
-      console.log("Matching serial is:", matchingSerial);
+      } else {
+        // match OCR text array with model matched SN Stock array
+        matchingSerial = matchSerial(text, localMatch);
+        if (!matchingSerial) {
+          console.log("triggering here")
+          localMatch.length === 0 ?
+          alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
+          alert("No matching serial number found in the image.");
+          return;
+        };
+        console.log("Matching serial is:", matchingSerial);
+      }
       handleSerialNumberUpdate2(productId, matchingSerial, collectionName);
 
       // setProcessingStatus('Finding Serial Number...');
       // matchSerial(match, localMatch);
+      setModelMatch(null)
+      setProcessingStatus("");
+    } catch (error) {
+      console.error("OCR processing failed:", error);
+      setExtractedText("Failed to extract text from image. Please try again.");
+      setMatchedProducts([]);
+      setProcessingStatus("");
+    } finally {
+      setIsProcessing(false);
+    }
+  });
+
+  // console.table(stageList)
+
+
+    // if model number doesn't match, prompt user to take a picture of the serial number.
+  // loop through TS Stock serial numbers to find a match, prompt user with model number the serial matches with.
+
+    const handleCaptureSN = useCallback(async (imageData, productId) => {
+    setCapturedImage(imageData);
+    setIsProcessing(true);
+    setProcessingStatus("Initializing OCR...");
+
+    try {
+      setProcessingStatus("Analyzing image...");
+      const text = await analyzeImage(imageData);
+      setExtractedText(text);
+
+      setProcessingStatus("Finding matches...");
+
+      const model = selectedProduct.StockShipped;
+      const stockMatchArray = localModelMatch(model);
+        console.table("Local stored matches:", stockMatchArray);
+      const matchingSerial = matchSerial2(text, stockMatchArray); // returns object with model and serial info
+      if (!matchingSerial) {
+        console.log("triggering here")
+        stockMatchArray.length === 0 ?
+        alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
+        alert("No matching serial number found in the image.");
+        return;
+      };
+      console.log("Matching serial is:", matchingSerial.TrackingNumber);
+      console.log("matching model number is:" , selectedProduct, "with ts stock mode:", matchingSerial.StockNumber)
+      handleSerialNumberUpdate2(productId, matchingSerial.TrackingNumber, collectionName);
 
       setProcessingStatus("");
     } catch (error) {
@@ -417,7 +513,7 @@ function App() {
     }
   });
 
-  console.log("matched model is:", modelMatch, "matched sn is:", serialMatch);
+  // console.log("matched model is:", modelMatch, "matched sn is:", serialMatch);
 
   const handleClearResult = useCallback(() => {
     setExtractedText("");
@@ -431,6 +527,7 @@ function App() {
     setExtractedText("");
     setMatchedProducts([]);
     setCapturedImage("");
+    setModelMatch(null);
   }, []);
 
   useEffect(() => {
@@ -445,17 +542,45 @@ function App() {
   async function handleSerialNumberUpdate2(
     productId,
     newSerial,
-    collectionPath
+    collectionPath,
+    idx
   ) {
     console.log("Updating product", productId, "with serial number", newSerial);
     // await updateDoc(doc(db, collectionPath, `${collectionPath}-${productId}`), {
     //   SerialNumber: newSerial
     // })
     // console.log("Updated product", productId, "with serial number", newSerial);
+    // serial number array of the same product id
+    const snObj = stageList.filter((item) => {
+      if (item.id === productId) {
+        return item.SerialNumber;
+      }
+    });
+    // update the specific index in the serial number array
+    console.log("Current obj is:", snObj);
+    const snArray = snObj[0].SerialNumber
+    console.log("Current SN array is:", snArray);
+    if (idx) { // update using index when manually making changes
+      console.log("Updating index:", idx, "with new serial:", newSerial);
+      snArray[idx] = newSerial;
+    } else { // update the next placeholder serial
+      let idx = "";
+      snArray.forEach((item, index) => {
+        let val = true;
+        if (val && item === serialPlaceholder) {
+          console.log("updating item:", item, "with serial: ", newSerial)
+          idx = index
+          val = false;
+        }
+      })
+      snArray[idx] = newSerial
+    }
+    console.log("Updated SN array is:", snArray);
     const docId = `${collectionPath}-${productId}`;
+    // update entire serial number array in firestore
     try {
       await updateDoc(doc(db, collectionPath, docId), {
-        SerialNumber: newSerial,
+        SerialNumber: snArray
       });
 
       // optimistic update so UI shows the new serial immediately
@@ -547,6 +672,7 @@ function App() {
             <div className="space-y-6 grid col-span-3 gap-6 sticky top-0 self-start">
               <Camera
                 onCapture={handleCapture}
+                onCaptureSN={handleCaptureSN}
                 isProcessing={isProcessing}
                 analyzeImage={handleCapture}
                 selectedProduct={selectedProduct}
@@ -568,6 +694,7 @@ function App() {
                 serialMatch={serialMatch}
                 onSerialNumberUpdate={handleSerialNumberUpdate2}
                 selectedDate={selectedDate}
+                stageList={stageList}
               />
             </div>
           </div>

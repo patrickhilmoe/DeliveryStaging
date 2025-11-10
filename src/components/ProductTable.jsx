@@ -1,5 +1,12 @@
 import React, { useState, useMemo } from "react";
-import { Search, Package, CheckCircle, AlertCircle, Save, CreditCard as Edit3 } from "lucide-react";
+import {
+  Search,
+  Package,
+  CheckCircle,
+  AlertCircle,
+  Save,
+  CreditCard as Edit3,
+} from "lucide-react";
 import { onSnapshot, collection } from "firebase/firestore";
 
 export const ProductTable = ({
@@ -12,7 +19,8 @@ export const ProductTable = ({
   db,
   serialMatch,
   onSerialNumberUpdate,
-  selectedDate
+  selectedDate,
+  stageList,
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -73,14 +81,36 @@ export const ProductTable = ({
   const collectionName = selectedDate;
 
   // serial editing below
-  const handleSerialEdit = (productId, currentSerial) => {
+  // v1
+  // const handleSerialEdit = (productId, currentSerial) => {
+  //   setEditingSerial((prev) => ({ ...prev, [productId]: true }));
+  //   setSerialInputs((prev) => ({ ...prev, [productId]: currentSerial }));
+  // };
+  // v2 for multiple serials per quantity
+  const handleSerialEdit = (productId, currentSerialArray) => {
     setEditingSerial((prev) => ({ ...prev, [productId]: true }));
-    setSerialInputs((prev) => ({ ...prev, [productId]: currentSerial }));
+    // initialize per-index inputs from existing serial array
+    setSerialInputs((prev) => ({
+      ...prev,
+      [productId]: Array.isArray(currentSerialArray)
+        ? [...currentSerialArray]
+        : [currentSerialArray || ""],
+    }));
   };
-
-  const handleSerialSave = (productId) => {
-    const newSerial = serialInputs[productId] || "";
-    onSerialNumberUpdate(productId, newSerial, collectionName);
+  // v1
+  // const handleSerialSave = (productId, index) => {
+  //   const newSerial = serialInputs[productId] || "";
+  //   onSerialNumberUpdate(productId, newSerial, collectionName, index);
+  //   setEditingSerial((prev) => ({ ...prev, [productId]: false }));
+  // };
+  const handleSerialSave = (productId, idx) => {
+    const newSerial =
+      (serialInputs[productId] && serialInputs[productId][idx]) || "";
+    // console.log("Saving serial number:", newSerial, "for product ID:", productId, "at index:", index);
+    // console.log("serialinputs state is:", serialInputs);
+    // console.log("serialInputs[productId] is:", serialInputs[productId]);
+    // console.log("serialInputs[productId][index] is:", serialInputs[productId][index]);
+    onSerialNumberUpdate(productId, newSerial, collectionName, idx, stageList);
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
   };
 
@@ -88,9 +118,17 @@ export const ProductTable = ({
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
     setSerialInputs((prev) => ({ ...prev, [productId]: "" }));
   };
-
-  const handleSerialInputChange = (productId, value) => {
-    setSerialInputs((prev) => ({ ...prev, [productId]: value }));
+  // v1
+  // const handleSerialInputChange = (productId, value) => {
+  //   setSerialInputs((prev) => ({ ...prev, [productId]: value }));
+  // };
+  // v2
+  const handleSerialInputChange = (productId, snIdx, value) => {
+    setSerialInputs((prev) => {
+      const arr = Array.isArray(prev[productId]) ? [...prev[productId]] : [];
+      arr[snIdx] = value;
+      return { ...prev, [productId]: arr };
+    });
   };
 
   return (
@@ -133,7 +171,7 @@ export const ProductTable = ({
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("modelNumber")}
+                  onClick={() => handleSort("ModelNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Model Number
@@ -146,7 +184,7 @@ export const ProductTable = ({
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("description")}
+                  onClick={() => handleSort("Description")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Description
@@ -185,7 +223,7 @@ export const ProductTable = ({
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("category")}
+                  onClick={() => handleSort("SerialNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Serial Number
@@ -231,49 +269,94 @@ export const ProductTable = ({
                   </td>
                   {/* added serial number editing below */}
                   <td className="px-6 py-4">
-                    {editingSerial[product.id] ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={serialInputs[product.id] || ""}
-                          onChange={(e) =>
-                            handleSerialInputChange(product.id, e.target.value)
-                          }
-                          className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter serial..."
-                          autoFocus
-                        />
-                        <button
-                          onClick={() => handleSerialSave(product.id)}
-                          className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
-                          title="Save"
-                        >
-                          <Save className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleSerialCancel(product.id)}
-                          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
-                          title="Cancel"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm text-gray-700 min-w-[100px]">
-                          {product.SerialNumber || "Not set"}
-                        </span>
-                        <button
-                          onClick={() =>
-                            handleSerialEdit(product.id, product.SerialNumber)
-                          }
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Edit serial number"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+                    {editingSerial[product.id]
+                      ? // loop based on quantity
+                        (Array.isArray(product.SerialNumber)
+                          ? product.SerialNumber
+                          : []
+                        ).map((sn, idx) => {
+                          const existing =
+                            serialInputs[product.id] &&
+                            serialInputs[product.id][idx];
+                          const value =
+                            existing ??
+                            (typeof sn === "object" ? sn.serial : sn) ??
+                            "";
+                          return (
+                            <div
+                              key={`${product.id}-sn-${idx}`}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="text"
+                                // value={serialInputs[product.id] || ""}
+                                // value={(serialInputs[product.id] && serialInputs[product.id][sn.id]) ?? sn ?? ""}
+                                value={value}
+                                onChange={(e) =>
+                                  // handleSerialInputChange(product.id, e.target.value)
+                                  handleSerialInputChange(
+                                    product.id,
+                                    idx,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter serial..."
+                                // autoFocus
+                                autoFocus={idx === 0}
+                              />
+                              <button
+                                onClick={() =>
+                                  handleSerialSave(product.id, idx)
+                                }
+                                className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                                title="Save"
+                              >
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleSerialCancel(product.id)}
+                                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                                title="Cancel"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        })
+                      : (Array.isArray(product.SerialNumber)
+                          ? product.SerialNumber
+                          : []
+                        ).map((sn, idx) => {
+                          const display =
+                            (serialInputs[product.id] &&
+                              serialInputs[product.id][idx]) ??
+                            (typeof sn === "object" ? sn.serial : sn) ??
+                            "";
+                          return (
+                            <div
+                              key={`${product.id}-sn-${idx}`}
+                              className="flex items-center gap-2"
+                            >
+                              <span className="font-mono text-sm text-gray-700 min-w-[100px]">
+                                {display}
+                                {/* {(serialInputs[product.id] && serialInputs[product.id][idx]) ?? sn ?? ""} */}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  handleSerialEdit(
+                                    product.id,
+                                    product.SerialNumber
+                                  )
+                                }
+                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Edit serial number"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
                   </td>
                 </tr>
               ))
