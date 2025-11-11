@@ -7,7 +7,6 @@ import {
   Save,
   CreditCard as Edit3,
 } from "lucide-react";
-import { onSnapshot, collection } from "firebase/firestore";
 
 export const ProductTable = ({
   products,
@@ -16,11 +15,9 @@ export const ProductTable = ({
   matchedProducts,
   selectedProduct,
   onProductSelect,
-  db,
   serialMatch,
   onSerialNumberUpdate,
   selectedDate,
-  stageList,
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -81,12 +78,7 @@ export const ProductTable = ({
   const collectionName = selectedDate;
 
   // serial editing below
-  // v1
-  // const handleSerialEdit = (productId, currentSerial) => {
-  //   setEditingSerial((prev) => ({ ...prev, [productId]: true }));
-  //   setSerialInputs((prev) => ({ ...prev, [productId]: currentSerial }));
-  // };
-  // v2 for multiple serials per quantity
+  // multiple serials per quantity
   const handleSerialEdit = (productId, currentSerialArray) => {
     setEditingSerial((prev) => ({ ...prev, [productId]: true }));
     // initialize per-index inputs from existing serial array
@@ -97,20 +89,11 @@ export const ProductTable = ({
         : [currentSerialArray || ""],
     }));
   };
-  // v1
-  // const handleSerialSave = (productId, index) => {
-  //   const newSerial = serialInputs[productId] || "";
-  //   onSerialNumberUpdate(productId, newSerial, collectionName, index);
-  //   setEditingSerial((prev) => ({ ...prev, [productId]: false }));
-  // };
+
   const handleSerialSave = (productId, idx) => {
     const newSerial =
       (serialInputs[productId] && serialInputs[productId][idx]) || "";
-    // console.log("Saving serial number:", newSerial, "for product ID:", productId, "at index:", index);
-    // console.log("serialinputs state is:", serialInputs);
-    // console.log("serialInputs[productId] is:", serialInputs[productId]);
-    // console.log("serialInputs[productId][index] is:", serialInputs[productId][index]);
-    onSerialNumberUpdate(productId, newSerial, collectionName, idx, stageList);
+    onSerialNumberUpdate(productId, newSerial, collectionName, idx);
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
   };
 
@@ -118,11 +101,7 @@ export const ProductTable = ({
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
     setSerialInputs((prev) => ({ ...prev, [productId]: "" }));
   };
-  // v1
-  // const handleSerialInputChange = (productId, value) => {
-  //   setSerialInputs((prev) => ({ ...prev, [productId]: value }));
-  // };
-  // v2
+
   const handleSerialInputChange = (productId, snIdx, value) => {
     setSerialInputs((prev) => {
       const arr = Array.isArray(prev[productId]) ? [...prev[productId]] : [];
@@ -289,11 +268,8 @@ export const ProductTable = ({
                             >
                               <input
                                 type="text"
-                                // value={serialInputs[product.id] || ""}
-                                // value={(serialInputs[product.id] && serialInputs[product.id][sn.id]) ?? sn ?? ""}
                                 value={value}
                                 onChange={(e) =>
-                                  // handleSerialInputChange(product.id, e.target.value)
                                   handleSerialInputChange(
                                     product.id,
                                     idx,
@@ -340,7 +316,6 @@ export const ProductTable = ({
                             >
                               <span className="font-mono text-sm text-gray-700 min-w-[100px]">
                                 {display}
-                                {/* {(serialInputs[product.id] && serialInputs[product.id][idx]) ?? sn ?? ""} */}
                               </span>
                               <button
                                 onClick={() =>

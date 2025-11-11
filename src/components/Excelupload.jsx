@@ -1,7 +1,6 @@
 import * as XLSX from "xlsx";
 import { useRef } from "react";
 import { Calendar } from "lucide-react";
-import { collection, addDoc } from "firebase/firestore";
 
 export const ExcelUpload = ({
   stock,
@@ -17,35 +16,9 @@ export const ExcelUpload = ({
   db,
   uploadData,
 }) => {
-  // Generate past dates for the dropdown (last 30 days)
-//   const generatePastDates = () => {
-//     const dates = [];
-//     for (let i = 0; i < 10; i++) {
-//       const date = new Date();
-//       date.setDate(date.getDate() - i);
-//       dates.push({
-//         value: date.toISOString().split("T")[0],
-//         label:
-//           i === 0
-//             ? "Today"
-//             : i === 1
-//             ? "Yesterday"
-//             : date.toLocaleDateString("en-US", {
-//                 weekday: "short",
-//                 month: "short",
-//                 day: "numeric",
-//               }),
-//       });
-//     }
-//     return dates;
-//   };
-//   console.log("Selected date is:", selectedDate);
-
-//   const pastDates = generatePastDates();
 
   const fileRef = useRef(null);
   const fileRef2 = useRef(null);
-  const fileRef3 = useRef(null);
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -81,15 +54,12 @@ export const ExcelUpload = ({
         };
       });
 
-      // **Note to Self: will this be too slow to process?
       let id = 0;
       let updatedKeyStockArr = [];
       data.forEach((item) => {
         let updatedKeysStockObj = {};
         for (const key in item) {
-          // console.log("Original Key:", key);
           const updatedKey = key.replace(/[#\s]/g, "");
-          // console.log("Updated Key:", updatedKey);
           updatedKeysStockObj[updatedKey] = item[key];
         }
         updatedKeysStockObj.id = id++;
@@ -147,18 +117,6 @@ export const ExcelUpload = ({
             >
               Date:
             </label>
-            {/* <select
-              id="date-select"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent border-none text-sm font-medium text-gray-800 focus:outline-none focus:ring-0 cursor-pointer"
-            >
-              {pastDates.map((date) => (
-                <option key={date.value} value={date.value}>
-                  {date.label}
-                </option>
-              ))}
-            </select> */}
             <input
               id="date-input"
               type="date"

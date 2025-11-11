@@ -1,11 +1,10 @@
-import React, { useRef, useCallback, useState } from "react";
+import { useRef } from "react";
 import { Camera as CameraIcon, Database, X } from "lucide-react";
 
 export const Camera = ({
   onCapture,
   onCaptureSN,
   isProcessing,
-  analyzeImage,
   selectedProduct,
   setSelectedProduct,
 }) => {
@@ -33,7 +32,6 @@ export const Camera = ({
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onCapture(file, selectedProduct.id);
-      // analyzeImage(file);
     }
   };
 
@@ -41,7 +39,6 @@ export const Camera = ({
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onCaptureSN(file, selectedProduct.id);
-      // analyzeImage(file);
     }
   };
 

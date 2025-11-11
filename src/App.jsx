@@ -2,12 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Camera } from "./components/Camera";
 import { ProductTable } from "./components/ProductTable";
 import { OCRResult } from "./components/OCRResult";
-import { sampleProducts } from "./data/products";
-import {
-  extractTextFromImage,
-  findProductMatches,
-  terminateOCR,
-} from "./utils/ocr";
 import { ScanLine, Zap, Database, X } from "lucide-react";
 import axios from "axios";
 import { ExcelUpload } from "./components/Excelupload";
@@ -25,19 +19,19 @@ import {
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
 // Temporary serials data import
-import { TimesaversSerial } from "./data/TimesaversSerial";
+import { TimesaversSerial } from "./data/testing_data/TimesaversSerial";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
   const [matchedProducts, setMatchedProducts] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [capturedImage, setCapturedImage] = useState("");
+  // const [capturedImage, setCapturedImage] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const [imageUri, setImageUri] = useState(null);
-  const [labels, setLabels] = useState([]);
+  // const [imageUri, setImageUri] = useState(null);
+  // const [labels, setLabels] = useState([]);
 
   const [blur, setBlur] = useState(false);
   // Timesavers Model Serial Report
@@ -88,7 +82,6 @@ function App() {
     console.log("Uploading objects to collection:", collectionPath, objects);
     const collectionRef = collection(db, collectionPath);
     for (const obj of objects) {
-      // await addDoc(collectionRef, obj);
       await setDoc(doc(db, collectionPath, `${collectionPath}-${obj.id}`), obj);
     }
     console.log("Objects uploaded as separate documents successfully!");
@@ -102,10 +95,10 @@ function App() {
 
     // define collection name based on selected date  
     const collectionName = selectedDate;
+    // set placeholder the serial number
+    const serialPlaceholder = "Not Set Yet"
 
-  // todo: when poplulating from firebase, boolean to update state item to hide stagelist button
-
-  // uploadObjectsAsDocs("2025-10-5", stageList);
+  // todo: when ts stock from firebase, boolean to update state item to hide button
 
   const updateDate = (date) => {
     const wordArray = date.split("/");
@@ -116,24 +109,19 @@ function App() {
     return newDate;
   };
 
-  const serialPlaceholder = "Not Set Yet"
-
   const uploadData = (data) => {
     console.log("Uploading data...", data);
     // Clean keys of stock data from Excel upload
     let id = 0
     if (!(stageList.length === 0)) {
       id = stageList.length;
-      // console.log("id length is: ", id)
       // todo: error handling to avoid accidental duplicates
     }
     let updatedKeyStockArr = [];
     data.forEach((item) => {
       let updatedKeysStockObj = {};
       for (const key in item) {
-        // console.log("Original Key:", key);
         const updatedKey = key.replace(/[#\s]/g, "");
-        // console.log("Updated Key:", updatedKey);
         updatedKeysStockObj[updatedKey] = item[key];
       }
       updatedKeysStockObj.id = id++;
@@ -142,9 +130,7 @@ function App() {
       const qty = Number(updatedKeysStockObj.QuantityToShip);
       console.log("Quantity to ship is:", updatedKeysStockObj.QuantityToShip, "and type is:", typeof qty);
       console.log("updated object looks like this: ", updatedKeysStockObj);
-      // updatedKeysStockObj.SerialNumber = Array.from({length: qty}, (_, i) => ({ id: i, serial: "Not Set Yet" }));
         for (let i = 1; i <= qty; i++) {
-          // let sn = {id: i - 1, serial: "Not Set Yet"};
           updatedKeysStockObj.SerialNumber.push(serialPlaceholder);
         }
       updatedKeyStockArr.push(updatedKeysStockObj);
@@ -155,8 +141,6 @@ function App() {
     console.log("Stock updated:", updatedKeyStockArr);
     uploadObjectsAsDocs(formattedDate, updatedKeyStockArr);
   };
-
-  // const collectionName = "2025-10-5";
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -201,40 +185,6 @@ function App() {
   }, [auth]);
   // firebase end
 
-  //   const analyzeImage2 = async (imageData) => {
-  //   const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
-  //   const apiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
-
-  //   const requestBody = {
-  //     requests: [
-  //       {
-  //         image: {
-  //           content: imageData,
-  //         },
-  //         features: [
-  //           { type: 'TEXT_DETECTION' },
-  //           { type: 'LABEL_DETECTION' },
-  //         ],
-  //       },
-  //     ],
-  //   };
-
-  //   try {
-  //     const response = await fetch(apiUrl, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(requestBody),
-  //     });
-  //     const data = await response.json();
-  //     console.log('Vision API Response:', data);
-  //     // Process the data in your React component
-  //   } catch (error) {
-  //     console.error('Error calling Vision API:', error);
-  //   }
-  // };
-
   const analyzeImage = async (imageData) => {
     try {
       if (!imageData) {
@@ -259,9 +209,6 @@ function App() {
       const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
-      // var encoded = Buffer.from(imageFile).toString('base64');
-      // console.log(base64ImageData2)
-
       const requestData = {
         requests: [
           {
@@ -274,9 +221,6 @@ function App() {
       };
 
       const apiResponse = await axios.post(apiURL, requestData);
-      // setLabels(apiResponse.data.responses[0].labelAnnotations);
-      // console.log(Labels)
-      console.log("API response:", apiResponse);
       console.log(
         "API textAnnotations response:",
         apiResponse.data.responses[0].textAnnotations
@@ -321,17 +265,6 @@ function App() {
     }
   }
 
-  // store OCR text array locally
-  // function localOCRMatch(ocr) {
-  //   return new Promise ((resolve) => resolve(setLocalOCR(ocr))) ;
-  // };
-  // store locally matched model numbers from stock data
-  // function localModelMatch(match) {
-  //   const localMatches = stock.filter(item => item.StockNumber === match);
-  //   // setLocalMatch(localMatches);
-  //   console.log("Local matches found:", localMatches);
-  //   return new Promise ((resolve) => resolve(setLocalMatch(localMatches))) ;
-  // }
   // local model match without promise from stock data - using TEMPORARY TimesaversSerial data
   function localModelMatch(match) {
     console.log("model to match batch of local stock:", match);
@@ -342,24 +275,8 @@ function App() {
     setLocalMatch(localMatches);
     console.log("Local matches found:", localMatches);
     return localMatches;
-    // return new Promise ((resolve) => resolve(setLocalMatch(localMatches))) ;
   }
-
-  // need to match model numbers to model numbers in stock data / TS serial data. Then locally store the matched serial numbers
-  // function matchSerial(text, stockMatchArray) {
-  //   // need match OCR text array and array of matched TSstock
-  //   stockMatchArray.forEach(tsSerial => {
-  //     text.forEach(item => {
-  //       if (tsSerial.TrackingNumber === item.description || tsSerial.TrackingNumber === item) {
-  //         console.log("Serial unit found:", item);
-  //         console.log("Serial unit found in TS:", tsSerial);
-  //         setSerialMatch(item.description || item);
-  //         console.log("Serial matched set to state:", item.description || item);
-  //         return item.description || item;
-  //       }
-  //     });
-  //   });
-  // }
+  // matching serial number to matched OCR model number
   function matchSerial(text, stockMatchArray) {
     if (!Array.isArray(text) || !Array.isArray(stockMatchArray)) return null;
 
@@ -381,7 +298,7 @@ function App() {
 
     return null;
   }
-
+    // matching serial number based on selected product model number
     function matchSerial2(text, stockMatchArray) {
     if (!Array.isArray(text) || !Array.isArray(stockMatchArray)) return null;
 
@@ -404,9 +321,7 @@ function App() {
 
     return null;
   }
-
-  const productModels = sampleProducts.map((product) => product.modelNumber);
-
+  // capture image text with model and serial number
   const handleCapture = useCallback(async (imageData, productId) => {
     setCapturedImage(imageData);
     setIsProcessing(true);
@@ -456,7 +371,6 @@ function App() {
       handleSerialNumberUpdate2(productId, matchingSerial, collectionName);
 
       // setProcessingStatus('Finding Serial Number...');
-      // matchSerial(match, localMatch);
       setModelMatch(null)
       setProcessingStatus("");
     } catch (error) {
@@ -468,13 +382,7 @@ function App() {
       setIsProcessing(false);
     }
   });
-
-  // console.table(stageList)
-
-
-    // if model number doesn't match, prompt user to take a picture of the serial number.
-  // loop through TS Stock serial numbers to find a match, prompt user with model number the serial matches with.
-
+  // capture image text with only serial number and selected model number
     const handleCaptureSN = useCallback(async (imageData, productId) => {
     setCapturedImage(imageData);
     setIsProcessing(true);
@@ -513,8 +421,6 @@ function App() {
     }
   });
 
-  // console.log("matched model is:", modelMatch, "matched sn is:", serialMatch);
-
   const handleClearResult = useCallback(() => {
     setExtractedText("");
     setMatchedProducts([]);
@@ -530,12 +436,6 @@ function App() {
     setModelMatch(null);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      terminateOCR();
-    };
-  }, []);
-
   /* add a relative div around the whole app and apply blur to it when no stock is loaded */
   const stockBlur = blur && "blur-sm bg-white/30";
 
@@ -546,10 +446,6 @@ function App() {
     idx
   ) {
     console.log("Updating product", productId, "with serial number", newSerial);
-    // await updateDoc(doc(db, collectionPath, `${collectionPath}-${productId}`), {
-    //   SerialNumber: newSerial
-    // })
-    // console.log("Updated product", productId, "with serial number", newSerial);
     // serial number array of the same product id
     const snObj = stageList.filter((item) => {
       if (item.id === productId) {
@@ -683,14 +579,12 @@ function App() {
             {/* Right Column */}
             <div className="grid col-span-7 gap-6">
               <ProductTable
-                // products={sampleProducts}
                 products={stageList}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 matchedProducts={matchedProducts}
                 selectedProduct={selectedProduct}
                 onProductSelect={handleProductSelect}
-                db={db}
                 serialMatch={serialMatch}
                 onSerialNumberUpdate={handleSerialNumberUpdate2}
                 selectedDate={selectedDate}
