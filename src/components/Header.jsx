@@ -2,11 +2,11 @@ import * as XLSX from "xlsx";
 import { useRef } from "react";
 import { Calendar } from "lucide-react";
 
-export const ExcelUpload = ({
+export const Header = ({
   stock,
   setStock,
-  blur,
-  setBlur,
+  noEdit,
+  setNoEdit,
   stageList,
   setStageList,
   selectedDate,
@@ -66,8 +66,9 @@ export const ExcelUpload = ({
         updatedKeyStockArr.push(updatedKeysStockObj);
       });
       setStock(updatedKeyStockArr);
+      setNoEdit("pointer-event-auto")
       console.log("updated data:", updatedKeyStockArr);
-      //   setBlur(!blur);
+      //   setNoEdit(!blur);
     } catch (err) {
       console.error("Failed to read Excel file:", err);
     }
@@ -127,15 +128,18 @@ export const ExcelUpload = ({
           </div>
         </div>
       </div>
-      <div style={{ display: visibleTest ? "none" : "flex" }}>
+      <div>
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
           onClick={() => fileRef2.current.click()}
         >
-          Upload Staging List
+          {(stageList.length === 0) ?
+          "Upload Staging List" :
+          "Update Staging List"
+          }
         </button>
       </div>
-      <div style={{ display: visibleTest ? "none" : "flex" }}>
+      <div style={{ display: (noEdit === "pointer-events-auto") ? "none" : "block" }}>
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
           onClick={() => fileRef.current.click()}

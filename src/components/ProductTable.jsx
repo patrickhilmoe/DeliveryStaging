@@ -18,6 +18,7 @@ export const ProductTable = ({
   serialMatch,
   onSerialNumberUpdate,
   selectedDate,
+  noEdit
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -144,7 +145,7 @@ export const ProductTable = ({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className={`${noEdit} overflow-x-auto`}>
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">

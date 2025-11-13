@@ -1,16 +1,14 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Camera } from "./components/Camera";
 import { ProductTable } from "./components/ProductTable";
-import { OCRResult } from "./components/OCRResult";
-import { ScanLine, Zap, Database, X } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import axios from "axios";
-import { ExcelUpload } from "./components/Excelupload";
+import { Header } from "./components/Header";
 import { SignIn } from "./components/SignIn";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import {
   collection,
-  addDoc,
   setDoc,
   doc,
   onSnapshot,
@@ -19,22 +17,18 @@ import {
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
 // Temporary serials data import
-import { TimesaversSerial } from "./data/testing_data/TimesaversSerial";
+// import { TimesaversSerial } from "./data/testing_data/TimesaversSerial";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
   const [matchedProducts, setMatchedProducts] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [capturedImage, setCapturedImage] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // const [imageUri, setImageUri] = useState(null);
-  // const [labels, setLabels] = useState([]);
-
-  const [blur, setBlur] = useState(false);
-  // Timesavers Model Serial Report
+  // restrict editing unless stock report is uploaded locally
+  const [noEdit, setNoEdit] = useState("pointer-events-none");
+  // Inventory Model Serial Report
   const [stock, setStock] = useState([]);
   // Staging list
   const [stageList, setStageList] = useState([]);
@@ -268,8 +262,11 @@ function App() {
   // local model match without promise from stock data - using TEMPORARY TimesaversSerial data
   function localModelMatch(match) {
     console.log("model to match batch of local stock:", match);
-    // todo : update the temp local stock data with uploaded version
-    const localMatches = TimesaversSerial.filter(
+    //** keeping this commented out in case of testing 
+    // const localMatches = TimesaversSerial.filter(
+    //   (item) => item.StockNumber === match
+    // );
+    const localMatches = stock.filter(
       (item) => item.StockNumber === match
     );
     setLocalMatch(localMatches);
@@ -436,9 +433,6 @@ function App() {
     setModelMatch(null);
   }, []);
 
-  /* add a relative div around the whole app and apply blur to it when no stock is loaded */
-  const stockBlur = blur && "blur-sm bg-white/30";
-
   async function handleSerialNumberUpdate2(
     productId,
     newSerial,
@@ -512,15 +506,14 @@ function App() {
   }
 
   return (
-    // <div className={stockBlur + " transition-all duration-500"}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-end mb-4">
-          <ExcelUpload
+          <Header
             stock={stock}
             setStock={setStock}
-            blur={blur}
-            setBlur={setBlur}
+            noEdit={noEdit}
+            setNoEdit={setNoEdit}
             stageList={stageList}
             setStageList={setStageList}
             selectedDate={selectedDate}
@@ -534,7 +527,7 @@ function App() {
             <img src={signout} className="icon-img-btn" />
           </button>
         </div>
-        <div className={stockBlur + " transition-all duration-500"}>
+        <div className="transition-all duration-500">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -565,7 +558,7 @@ function App() {
 
           <div className="grid lg:grid-cols-10 grid-cols-1 gap-2">
             {/* Left Column */}
-            <div className="space-y-6 grid col-span-3 gap-6 sticky top-0 self-start">
+            <div className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start`}>
               <Camera
                 onCapture={handleCapture}
                 onCaptureSN={handleCaptureSN}
@@ -588,14 +581,13 @@ function App() {
                 serialMatch={serialMatch}
                 onSerialNumberUpdate={handleSerialNumberUpdate2}
                 selectedDate={selectedDate}
-                stageList={stageList}
+                noEdit={noEdit}
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-    // </div>
   );
 }
 

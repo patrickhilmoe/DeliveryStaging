@@ -7,18 +7,16 @@ layout - the sn area is not visible after running the camera
 
 layout - sort lines based on name & location
 
+logic - updated uploading TS stock file and prevent tampering until it is uploaded locally
+
 logic - model number issues
     - ones with eg. "01"
 
+logic - if a process fails, a new picture can't be processed unless refreshed
+
 finalizing project
 push to netlify
-update the Readme file for what the project is doing
-    header, productTable, camera, app have the bluk of the logic
-     **reminder** rename excelupload to header
-add test excel files and images for someone to critique the project
-update the local stock for the upload of stock
 polish spacing with CSS
-make it mobile friendly?...
+make it mobile friendly
 
-if a process fails, a new picture can't be processed unless refreshed...
 
