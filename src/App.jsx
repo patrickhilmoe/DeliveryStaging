@@ -320,7 +320,7 @@ function App() {
   }
   // capture image text with model and serial number
   const handleCapture = useCallback(async (imageData, productId) => {
-    setCapturedImage(imageData);
+    // setCapturedImage(imageData);
     setIsProcessing(true);
     setProcessingStatus("Initializing OCR...");
 
@@ -381,7 +381,7 @@ function App() {
   });
   // capture image text with only serial number and selected model number
     const handleCaptureSN = useCallback(async (imageData, productId) => {
-    setCapturedImage(imageData);
+    // setCapturedImage(imageData);
     setIsProcessing(true);
     setProcessingStatus("Initializing OCR...");
 
@@ -421,7 +421,7 @@ function App() {
   const handleClearResult = useCallback(() => {
     setExtractedText("");
     setMatchedProducts([]);
-    setCapturedImage("");
+    // setCapturedImage("");
     setSelectedProduct(null);
   }, []);
 
@@ -429,7 +429,7 @@ function App() {
     setSelectedProduct(product);
     setExtractedText("");
     setMatchedProducts([]);
-    setCapturedImage("");
+    // setCapturedImage("");
     setModelMatch(null);
   }, []);
 
