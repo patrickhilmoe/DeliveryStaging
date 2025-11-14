@@ -124,7 +124,7 @@ useEffect(() => {
               <ScanLine className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-              OCR Scanner
+              Staging List Scanner
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
@@ -216,7 +216,7 @@ useEffect(() => {
           </form>
 
           {/* Demo Login */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          {/* <div className="mt-6 pt-6 border-t border-gray-200">
             <button
               onClick={handleDemoLogin}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
@@ -226,7 +226,7 @@ useEffect(() => {
             <p className="text-xs text-gray-500 text-center mt-2">
               Click to auto-fill demo login credentials
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Footer */}

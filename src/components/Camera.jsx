@@ -89,7 +89,7 @@ export const Camera = ({
             <button
               onClick={handleCameraCapture}
               disabled={isProcessing}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mb-4"
             >
               <CameraIcon className="w-5 h-5" />
               Take Model/SN Picture

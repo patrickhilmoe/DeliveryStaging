@@ -448,7 +448,8 @@ function App() {
     });
     // update the specific index in the serial number array
     console.log("Current obj is:", snObj);
-    const snArray = snObj[0].SerialNumber
+    // const snArray = snObj[0].SerialNumber
+    const snArray = Array.isArray(snObj[0].SerialNumber) ? [...snObj[0].SerialNumber] : [];
     console.log("Current SN array is:", snArray);
     if (idx) { // update using index when manually making changes
       console.log("Updating index:", idx, "with new serial:", newSerial);
@@ -477,12 +478,13 @@ function App() {
       setStageList((prev) =>
         prev.map((p) =>
           p.id === docId || p.id === productId
-            ? { ...p, SerialNumber: newSerial }
+            ? { ...p, SerialNumber: snArray }
             : p
         )
       );
 
       console.log("Updated product", docId, "with serial number", newSerial);
+      console.log("Updated product", docId, "with serial number", snArray);
     } catch (err) {
       console.error("Failed to update serial:", err);
     }
@@ -508,7 +510,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-end mb-4">
+        <div className="">
+        <div className="flex mb-4 justify-start">
           <Header
             stock={stock}
             setStock={setStock}
@@ -523,9 +526,12 @@ function App() {
             db={db}
             uploadData={uploadData}
           />
-          <button onClick={authSignOut} className="icon-btn">
+        </div>
+        <div className="justify-end">
+          <button onClick={authSignOut} className="icon-btn float-right">
             <img src={signout} className="icon-img-btn" />
           </button>
+        </div>
         </div>
         <div className="transition-all duration-500">
           {/* Header */}
@@ -539,7 +545,7 @@ function App() {
               </h1>
             </div>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
-              Select a product from the database below, then use your camera to
+              Upload the Stock File. Select a product below, then use your camera to
               verify the serial number
             </p>
           </div>

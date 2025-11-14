@@ -108,7 +108,7 @@ export const Header = ({
   return (
     <>
       {/* Date Selector */}
-      <div className="mb-2 justify-between">
+      <div className="mb-2">
         <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-200 w-fit">
           <Calendar className="w-5 h-5 text-blue-600" />
           <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export const Header = ({
           </div>
         </div>
       </div>
-      <div>
+      <div className="mb-2 ml-10">
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
           onClick={() => fileRef2.current.click()}
@@ -139,7 +139,7 @@ export const Header = ({
           }
         </button>
       </div>
-      <div style={{ display: (noEdit === "pointer-events-auto") ? "none" : "block" }}>
+      <div style={{ display: (noEdit === "pointer-events-auto") ? "none" : "block" }} className="mb-2 ml-10">
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
           onClick={() => fileRef.current.click()}
@@ -147,6 +147,7 @@ export const Header = ({
           Upload TS Stock File
         </button>
       </div>
+
 
       {/*Hidden file inputs*/}
       {/* handle stock list upload */}
