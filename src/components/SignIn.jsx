@@ -110,8 +110,8 @@ useEffect(() => {
   };
 
   const handleDemoLogin = () => {
-    setEmail("pshilmoe@gmail.com");
-    setPassword("123456");
+    setEmail("person@gmail.com");
+    setPassword("password");
   };
 
   return (

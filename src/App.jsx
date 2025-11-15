@@ -17,7 +17,7 @@ import {
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
 // Temporary serials data import
-// import { TimesaversSerial } from "./data/testing_data/TimesaversSerial";
+// import { TimesaversSerial } from "./data/testing_data/Stock-Test-File-Array";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
@@ -90,17 +90,65 @@ function App() {
     // define collection name based on selected date  
     const collectionName = selectedDate;
     // set placeholder the serial number
-    const serialPlaceholder = "Not Set Yet"
+    const serialPlaceholder = "nsy"
 
   // todo: when ts stock from firebase, boolean to update state item to hide button
 
-  const updateDate = (date) => {
-    const wordArray = date.split("/");
-    const storeYear = wordArray.pop()
-    const yearFirst = `20${storeYear}`; // adjust for 20xx year
-    wordArray.unshift(yearFirst);
-    const newDate = wordArray.join("-");
-    return newDate;
+  // const updateDate = (date) => {
+  //   const wordArray = date.split("/");
+  //   const storeYear = wordArray.pop()
+  //   const yearFirst = `20${storeYear}`; // adjust for 20xx year
+  //   wordArray.unshift(yearFirst);
+  //   const newDate = wordArray.join("-");
+  //   return newDate;
+  // };
+
+  const updateDate = (dateInput) => {
+    if (dateInput === null || dateInput === undefined) return "";
+
+    // If it's a JS Date
+    if (dateInput instanceof Date && !isNaN(dateInput)) {
+      const d = dateInput;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // If Excel gives a numeric serial date (common)
+    if (typeof dateInput === "number") {
+      // convert Excel serial to JS Date (Excel epoch handling)
+      const jsDate = new Date((Math.round(dateInput) - 25569) * 24 * 60 * 60 * 1000);
+      if (!isNaN(jsDate)) {
+        const yyyy = jsDate.getFullYear();
+        const mm = String(jsDate.getMonth() + 1).padStart(2, "0");
+        const dd = String(jsDate.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    // Otherwise coerce to string and handle formats like "DD/MM/YY" or "DD/MM/YYYY"
+    const str = String(dateInput).trim();
+    if (str.includes("/")) {
+      const parts = str.split("/");
+      // assume last part is year (2 or 4 digits)
+      const yy = parts.pop();
+      const year = yy.length === 2 ? `20${yy}` : yy;
+      parts.unshift(year);
+      return parts.join("-");
+    }
+
+    // fallback: try Date parsing
+    const parsed = new Date(str);
+    if (!isNaN(parsed)) {
+      const yyyy = parsed.getFullYear();
+      const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+      const dd = String(parsed.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // last resort — return original string
+    return str;
   };
 
   const uploadData = (data) => {
@@ -121,7 +169,16 @@ function App() {
       updatedKeysStockObj.id = id++;
       updatedKeysStockObj.SerialNumber = []; // add empty SN field for later update
       // crete and object with multiple serial numbers if quantity > 1
-      const qty = Number(updatedKeysStockObj.QuantityToShip);
+      let qty = 1
+      console.log("qty to ship is value of: ", typeof updatedKeysStockObj.QuantityToShip, "length is: ", updatedKeysStockObj.QuantityToShip.length)
+      if(updatedKeysStockObj.QuantityToShip.length > 2) {
+        let splitQty = updatedKeysStockObj.QuantityToShip.split(" ")
+        qty = splitQty[0]
+        console.log("quantity is of number and text is: ", qty)
+      } else {
+        qty = Number(updatedKeysStockObj.QuantityToShip);
+      }
+      console.log("qty is: ", typeof qty, " and length of ", qty.length)
       console.log("Quantity to ship is:", updatedKeysStockObj.QuantityToShip, "and type is:", typeof qty);
       console.log("updated object looks like this: ", updatedKeysStockObj);
         for (let i = 1; i <= qty; i++) {
@@ -318,67 +375,67 @@ function App() {
 
     return null;
   }
-  // capture image text with model and serial number
-  const handleCapture = useCallback(async (imageData, productId) => {
-    // setCapturedImage(imageData);
-    setIsProcessing(true);
-    setProcessingStatus("Initializing OCR...");
+  // ** redunant to capture image text with model and serial number
+  // const handleCapture = useCallback(async (imageData, productId) => {
+  //   // setCapturedImage(imageData);
+  //   setIsProcessing(true);
+  //   setProcessingStatus("Initializing OCR...");
 
-    try {
-      setProcessingStatus("Analyzing image...");
-      const text = await analyzeImage(imageData);
-      setExtractedText(text);
+  //   try {
+  //     setProcessingStatus("Analyzing image...");
+  //     const text = await analyzeImage(imageData);
+  //     setExtractedText(text);
 
-      setProcessingStatus("Finding matches...");
-      // if the model has its picture taken but need the serial number. bypass matching model number
-      let matchingSerial = "";
-      if (!modelMatch) {
-        const match = matchProduct(text);
-        setModelMatch(match);
-        if (!match) {
-          alert("No matching model number found in the image.");
-          return;
-        }
-        console.log("Model matched is:", match);
-        setMatchedProducts(match ? [match] : []);
-        console.log("Matched products:", match);
-        // store array of the matched model number from the Serial Number Stcok
-        const stockMatchArray = localModelMatch(match);
-        console.log("Local stored matches:", stockMatchArray);
-        matchingSerial = matchSerial(text, stockMatchArray);
-      if (!matchingSerial) {
-        console.log("triggering here")
-        stockMatchArray.length === 0 ?
-        alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
-        alert("No matching serial number found in the image.");
-        return;
-      };
-      } else {
-        // match OCR text array with model matched SN Stock array
-        matchingSerial = matchSerial(text, localMatch);
-        if (!matchingSerial) {
-          console.log("triggering here")
-          localMatch.length === 0 ?
-          alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
-          alert("No matching serial number found in the image.");
-          return;
-        };
-        console.log("Matching serial is:", matchingSerial);
-      }
-      handleSerialNumberUpdate2(productId, matchingSerial, collectionName);
+  //     setProcessingStatus("Finding matches...");
+  //     // if the model has its picture taken but need the serial number. bypass matching model number
+  //     let matchingSerial = "";
+  //     if (!modelMatch) {
+  //       const match = matchProduct(text);
+  //       setModelMatch(match);
+  //       if (!match) {
+  //         alert("No matching model number found in the image.");
+  //         return;
+  //       }
+  //       console.log("Model matched is:", match);
+  //       setMatchedProducts(match ? [match] : []);
+  //       console.log("Matched products:", match);
+  //       // store array of the matched model number from the Serial Number Stcok
+  //       const stockMatchArray = localModelMatch(match);
+  //       console.log("Local stored matches:", stockMatchArray);
+  //       matchingSerial = matchSerial(text, stockMatchArray);
+  //     if (!matchingSerial) {
+  //       console.log("triggering here")
+  //       stockMatchArray.length === 0 ?
+  //       alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
+  //       alert("No matching serial number found in the image.");
+  //       return;
+  //     };
+  //     } else {
+  //       // match OCR text array with model matched SN Stock array
+  //       matchingSerial = matchSerial(text, localMatch);
+  //       if (!matchingSerial) {
+  //         console.log("triggering here")
+  //         localMatch.length === 0 ?
+  //         alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
+  //         alert("No matching serial number found in the image.");
+  //         return;
+  //       };
+  //       console.log("Matching serial is:", matchingSerial);
+  //     }
+  //     handleSerialNumberUpdate2(productId, matchingSerial, collectionName);
 
-      // setProcessingStatus('Finding Serial Number...');
-      setModelMatch(null)
-      setProcessingStatus("");
-    } catch (error) {
-      console.error("OCR processing failed:", error);
-      setExtractedText("Failed to extract text from image. Please try again.");
-      setMatchedProducts([]);
-      setProcessingStatus("");
-    } finally {
-      setIsProcessing(false);
-    }
-  });
+  //     // setProcessingStatus('Finding Serial Number...');
+  //     setModelMatch(null)
+  //     setProcessingStatus("");
+  //   } catch (error) {
+  //     console.error("OCR processing failed:", error);
+  //     setExtractedText("Failed to extract text from image. Please try again.");
+  //     setMatchedProducts([]);
+  //     setProcessingStatus("");
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // });
   // capture image text with only serial number and selected model number
     const handleCaptureSN = useCallback(async (imageData, productId) => {
     // setCapturedImage(imageData);
@@ -396,6 +453,7 @@ function App() {
       const stockMatchArray = localModelMatch(model);
         console.table("Local stored matches:", stockMatchArray);
       const matchingSerial = matchSerial2(text, stockMatchArray); // returns object with model and serial info
+      setMatchedProducts(matchingSerial)
       if (!matchingSerial) {
         console.log("triggering here")
         stockMatchArray.length === 0 ?
@@ -511,7 +569,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
         <div className="">
-        <div className="flex mb-4 justify-start">
+        <div className="flex mb-4 justify-between">
           <Header
             stock={stock}
             setStock={setStock}
@@ -526,8 +584,6 @@ function App() {
             db={db}
             uploadData={uploadData}
           />
-        </div>
-        <div className="justify-end">
           <button onClick={authSignOut} className="icon-btn float-right">
             <img src={signout} className="icon-img-btn" />
           </button>
@@ -566,10 +622,9 @@ function App() {
             {/* Left Column */}
             <div className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start`}>
               <Camera
-                onCapture={handleCapture}
+                // onCapture={handleCapture}
                 onCaptureSN={handleCaptureSN}
                 isProcessing={isProcessing}
-                analyzeImage={handleCapture}
                 selectedProduct={selectedProduct}
                 setSelectedProduct={setSelectedProduct}
               />

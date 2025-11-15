@@ -7,6 +7,9 @@ The app used bolt.new to AI generate the layout and main function. It has been t
 
 Previous dates can be viewed but the line items can't be modified unless the stock file is uploaded locally.
 
+app link:
+staginglist.netlify.app
+
 **for product testing** 
 
 the file dates are 10/31. To see the list populate, set the date to 10/31

@@ -49,6 +49,7 @@ export const ProductTable = ({
   }, [products, searchQuery, sortBy, sortOrder]);
 
   const handleSort = (column) => {
+    console.log(column)
     if (sortBy === column) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
@@ -57,23 +58,23 @@ export const ProductTable = ({
     }
   };
 
-  const getRowClassName = (modelNumber) => {
-    if (selectedProduct?.modelNumber === modelNumber) {
-      return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
-    }
-    if (matchedProducts.includes(modelNumber)) {
-      return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
-    }
+  const getRowClassName = (serialNumber) => {
+    // if (selectedProduct?.serialNumber === serialNumber) {
+    //   return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
+    // }
+    // if (matchedProducts.includes(serialNumber)) {
+    //   return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
+    // }
     return "bg-white hover:bg-gray-50 cursor-pointer";
   };
 
-  const getMatchIcon = (modelNumber) => {
-    if (selectedProduct?.modelNumber === modelNumber) {
-      return <CheckCircle className="w-4 h-4 text-blue-600" />;
-    }
-    if (matchedProducts.includes(modelNumber)) {
-      return <CheckCircle className="w-4 h-4 text-green-600" />;
-    }
+  const getMatchIcon = (serialNumber) => {
+    // if (selectedProduct?.serialNumber === serialNumber) {
+    //   return <CheckCircle className="w-4 h-4 text-blue-600" />;
+    // }
+    // if (matchedProducts.includes(serialNumber)) {
+    //   return <CheckCircle className="w-4 h-4 text-green-600" />;
+    // }
     return null;
   };
   const collectionName = selectedDate;
@@ -151,11 +152,11 @@ export const ProductTable = ({
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("ModelNumber")}
+                  onClick={() => handleSort("StockShipped")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Model Number
-                  {sortBy === "modelNumber" && (
+                  {sortBy === "StockShipped" && (
                     <span className="text-xs">
                       {sortOrder === "asc" ? "↑" : "↓"}
                     </span>
@@ -164,11 +165,11 @@ export const ProductTable = ({
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("Description")}
+                  onClick={() => handleSort("Description1")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Description
-                  {sortBy === "description" && (
+                  {sortBy === "Description1" && (
                     <span className="text-xs">
                       {sortOrder === "asc" ? "↑" : "↓"}
                     </span>
@@ -177,7 +178,7 @@ export const ProductTable = ({
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("QuantityToShip")}
+                  // onClick={() => handleSort("QuantityToShip")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Quantity
@@ -203,11 +204,11 @@ export const ProductTable = ({
               </th>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => handleSort("SerialNumber")}
+                  // onClick={() => handleSort("SerialNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Serial Number
-                  {sortBy === "category" && (
+                  {sortBy === "SerialNumber" && (
                     <span className="text-xs">
                       {sortOrder === "asc" ? "↑" : "↓"}
                     </span>
@@ -223,7 +224,7 @@ export const ProductTable = ({
                   key={product.id}
                   onClick={() => onProductSelect(product)}
                   className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                    product.StockShipped
+                    product.SerialNumber
                   )}`}
                   style={{
                     animationDelay: `${index * 50}ms`,
@@ -235,7 +236,7 @@ export const ProductTable = ({
                       <span className="font-mono text-sm font-medium text-gray-900">
                         {product.StockShipped}
                       </span>
-                      {getMatchIcon(product.StockShipped)}
+                      {getMatchIcon(product.SerialNumber)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-700">
@@ -337,7 +338,7 @@ export const ProductTable = ({
                 </tr>
               ))
             ) : (
-              <tr>
+              <tr className="justify-center">
                 <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
                   No products to display.
                 </td>

@@ -28,12 +28,12 @@ export const Camera = ({
     cameraInputRefSN.current?.click();
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      onCapture(file, selectedProduct.id);
-    }
-  };
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files?.[0];
+  //   if (file && file.type.startsWith("image/")) {
+  //     onCapture(file, selectedProduct.id);
+  //   }
+  // };
 
     const handleFileChangeSN = (event) => {
     const file = event.target.files?.[0];
@@ -43,7 +43,7 @@ export const Camera = ({
   };
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-xl p-2">
+    <div className=" bg-white rounded-2xl shadow-xl p-2">
       <div className="flex flex-col items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <CameraIcon className="w-5 h-5 text-blue-600 pb-16" />
@@ -86,14 +86,14 @@ export const Camera = ({
           </div>
         )}
           <>
-            <button
+            {/* <button
               onClick={handleCameraCapture}
               disabled={isProcessing}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mb-4"
             >
               <CameraIcon className="w-5 h-5" />
               Take Model/SN Picture
-            </button>
+            </button> */}
             <button
               onClick={handleCameraCaptureSN}
               disabled={isProcessing}
@@ -106,14 +106,14 @@ export const Camera = ({
       </div>
       {/* Hidden file inputs */}
       {/* model and serial number capture */}
-      <input
+      {/* <input
         ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={handleFileChange}
         className="hidden"
-      />
+      /> */}
       {/* serial number capture */}
       <input
         ref={cameraInputRefSN}
