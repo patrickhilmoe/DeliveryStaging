@@ -21,7 +21,7 @@ import signout from "./assets/icon-sign-out.svg";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
-  const [matchedProducts, setMatchedProducts] = useState([]);
+  const [matchedProducts, setMatchedProducts] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
@@ -362,7 +362,7 @@ function App() {
 
         const value = typeof item === "string" ? item : item?.description;
         if (!value) continue;
-        console.log("ts trackingnum: ", tsSerial.TrackingNumber, "and ocr num: ", value)
+        // console.log("ts trackingnum: ", tsSerial.TrackingNumber, "and ocr num: ", value)
         if (tsSerial.TrackingNumber === value) {
           console.log("Serial unit found:", item);
           console.log("Serial unit found in TS:", tsSerial);
@@ -436,6 +436,7 @@ function App() {
   //     setIsProcessing(false);
   //   }
   // });
+
   // capture image text with only serial number and selected model number
     const handleCaptureSN = useCallback(async (imageData, productId) => {
     // setCapturedImage(imageData);
@@ -469,7 +470,7 @@ function App() {
     } catch (error) {
       console.error("OCR processing failed:", error);
       setExtractedText("Failed to extract text from image. Please try again.");
-      setMatchedProducts([]);
+      setMatchedProducts(null);
       setProcessingStatus("");
     } finally {
       setIsProcessing(false);
@@ -478,7 +479,7 @@ function App() {
 
   const handleClearResult = useCallback(() => {
     setExtractedText("");
-    setMatchedProducts([]);
+    setMatchedProducts(null);
     // setCapturedImage("");
     setSelectedProduct(null);
   }, []);
@@ -486,7 +487,7 @@ function App() {
   const handleProductSelect = useCallback((product) => {
     setSelectedProduct(product);
     setExtractedText("");
-    setMatchedProducts([]);
+    setMatchedProducts(null);
     // setCapturedImage("");
     setModelMatch(null);
   }, []);
@@ -620,13 +621,14 @@ function App() {
 
           <div className="grid lg:grid-cols-10 grid-cols-1 gap-2">
             {/* Left Column */}
-            <div className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start`}>
+            <div className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent`}>
               <Camera
                 // onCapture={handleCapture}
                 onCaptureSN={handleCaptureSN}
                 isProcessing={isProcessing}
                 selectedProduct={selectedProduct}
                 setSelectedProduct={setSelectedProduct}
+                extractedText={extractedText}
               />
             </div>
 

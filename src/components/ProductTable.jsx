@@ -18,7 +18,7 @@ export const ProductTable = ({
   serialMatch,
   onSerialNumberUpdate,
   selectedDate,
-  noEdit
+  noEdit,
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -49,7 +49,7 @@ export const ProductTable = ({
   }, [products, searchQuery, sortBy, sortOrder]);
 
   const handleSort = (column) => {
-    console.log(column)
+    console.log(column);
     if (sortBy === column) {
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
@@ -58,23 +58,24 @@ export const ProductTable = ({
     }
   };
 
-  const getRowClassName = (serialNumber) => {
-    // if (selectedProduct?.serialNumber === serialNumber) {
-    //   return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
-    // }
-    // if (matchedProducts.includes(serialNumber)) {
-    //   return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
-    // }
+  // row highlighting green not working
+  const getRowClassName = (id) => {
+    // console.log("matchedProducts?.id is: ", matchedProducts?.id)
+    // console.log("serialMatch is: ", serialMatch)
+    // console.log("matchedProducts.length is: ", matchedProducts)
+    if (matchedProducts?.id === id && serialMatch && matchedProducts) {
+      return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
+    }
+    if (selectedProduct?.id === id) {
+      return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
+    }
     return "bg-white hover:bg-gray-50 cursor-pointer";
   };
 
-  const getMatchIcon = (serialNumber) => {
-    // if (selectedProduct?.serialNumber === serialNumber) {
-    //   return <CheckCircle className="w-4 h-4 text-blue-600" />;
-    // }
-    // if (matchedProducts.includes(serialNumber)) {
-    //   return <CheckCircle className="w-4 h-4 text-green-600" />;
-    // }
+  const getMatchIcon = (id) => {
+    if (selectedProduct?.id === id && serialMatch && matchedProducts) {
+      return <CheckCircle className="w-4 h-4 text-green-600" />;
+    }
     return null;
   };
   const collectionName = selectedDate;
@@ -96,12 +97,24 @@ export const ProductTable = ({
     const newSerial =
       (serialInputs[productId] && serialInputs[productId][idx]) || "";
     onSerialNumberUpdate(productId, newSerial, collectionName, idx);
+    // setEditingSerial((prev) => ({ ...prev, [productId]: false }));
+    // keep local inputs in sync so UI can immediately show the saved value
+    setSerialInputs((prev) => {
+      const arr = Array.isArray(prev[productId]) ? [...prev[productId]] : [];
+      arr[idx] = newSerial;
+      return { ...prev, [productId]: arr };
+    });
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
   };
 
   const handleSerialCancel = (productId) => {
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
-    setSerialInputs((prev) => ({ ...prev, [productId]: "" }));
+    // setSerialInputs((prev) => ({ ...prev, [productId]: [] }));
+    setSerialInputs((prev) => {
+      const next = { ... prev };
+      delete next[productId];
+      return next;
+    })
   };
 
   const handleSerialInputChange = (productId, snIdx, value) => {
@@ -120,12 +133,12 @@ export const ProductTable = ({
             <Package className="w-5 h-5 text-blue-600" />
             Product Database
           </h2>
-          {matchedProducts.length > 0 && (
+          {matchedProducts && (
             <>
-              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              {/* <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                 <AlertCircle className="w-4 h-4" />
                 Model Number {matchedProducts} confirmed
-              </div>
+              </div> */}
               <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                 <AlertCircle className="w-4 h-4" />
                 Serial Number {serialMatch} confirmed
@@ -150,7 +163,7 @@ export const ProductTable = ({
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 py-2 text-left">
                 <button
                   onClick={() => handleSort("StockShipped")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -163,7 +176,7 @@ export const ProductTable = ({
                   )}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 py-2 text-left">
                 <button
                   onClick={() => handleSort("Description1")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -176,7 +189,7 @@ export const ProductTable = ({
                   )}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 py-2 text-left">
                 <button
                   // onClick={() => handleSort("QuantityToShip")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -189,7 +202,7 @@ export const ProductTable = ({
                   )}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 py-2 text-left">
                 <button
                   onClick={() => handleSort("LocationNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -202,7 +215,7 @@ export const ProductTable = ({
                   )}
                 </button>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 py-2 text-left">
                 <button
                   // onClick={() => handleSort("SerialNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
@@ -224,33 +237,114 @@ export const ProductTable = ({
                   key={product.id}
                   onClick={() => onProductSelect(product)}
                   className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                    product.SerialNumber
+                    product.id
                   )}`}
                   style={{
                     animationDelay: `${index * 50}ms`,
                     animation: "fadeIn 0.3s ease-out forwards",
                   }}
                 >
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-sm font-medium text-gray-900">
                         {product.StockShipped}
                       </span>
-                      {getMatchIcon(product.SerialNumber)}
+                      {getMatchIcon(product.id)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-700">
+                  <td className="px-4 py-2 text-gray-700">
                     {product.Description1}
                   </td>
-                  <td className="px-6 py-4 text-gray-700">
+                  <td className="px-4 py-2 text-gray-700">
                     {product.QuantityToShip}
                   </td>
-                  <td className="px-6 py-4 text-gray-700">
+                  <td className="px-4 py-2 text-gray-700">
                     {product.LocationNumber}
                   </td>
                   {/* added serial number editing below */}
-                  <td className="px-6 py-4">
-                    {editingSerial[product.id]
+                  <td className="px-4 py-2">
+                    {(() => {
+                      // prefer local inputs (most recent edit), otherwise coerce product.SerialNumber to array
+                      const serialList =
+                        serialInputs[product.id] ??
+                        (Array.isArray(product.SerialNumber)
+                          ? product.SerialNumber
+                          : product.SerialNumber
+                          ? [product.SerialNumber]
+                          : []);
+
+                      return serialList.map((sn, idx) => {
+                        const existing =
+                          serialInputs[product.id] &&
+                          serialInputs[product.id][idx];
+                        const value =
+                          existing ??
+                          (typeof sn === "object" ? sn.serial : sn) ??
+                          "";
+
+                        if (editingSerial[product.id]) {
+                          return (
+                            <div
+                              key={`${product.id}-sn-${idx}`}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="text"
+                                value={value}
+                                onChange={(e) =>
+                                  handleSerialInputChange(
+                                    product.id,
+                                    idx,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter serial..."
+                                autoFocus={idx === 0}
+                              />
+                              <button
+                                onClick={() =>
+                                  handleSerialSave(product.id, idx)
+                                }
+                                className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                                title="Save"
+                              >
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleSerialCancel(product.id)}
+                                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                                title="Cancel"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={`${product.id}-sn-${idx}`}
+                            className="flex items-center gap-2"
+                          >
+                            <span className="font-mono text-sm text-gray-700 min-w-[100px]">
+                              {value}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleSerialEdit(product.id, product.SerialNumber)
+                              }
+                              className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              title="Edit serial number"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    {/* {editingSerial[product.id]
                       ? // loop based on quantity
                         (Array.isArray(product.SerialNumber)
                           ? product.SerialNumber
@@ -333,7 +427,7 @@ export const ProductTable = ({
                               </button>
                             </div>
                           );
-                        })}
+                        })} */}
                   </td>
                 </tr>
               ))

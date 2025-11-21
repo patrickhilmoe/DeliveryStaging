@@ -1,10 +1,15 @@
 # OCR Appliance Model and Serial Number Scanner
 
 notes:
-layout - sort lines based on name & location
+Finalizing - clean up unused functions and commented sections. write notes for Luke's review
+layout - scrolling on tablet left to right is too long
+    -potentially fixed - test with tablet
+layout/logic - flag s/n area if manually entered
 
 logic - if a process fails, a new picture can't be processed unless refreshed
 
-layout - make it mobile friendly
-
 layout - highlight the stock button if not uploaded. also make it disappear when uploaded.
+
+logic - set levels of access based on IAM? admin/edit/read (concerned user level can press buttons that will alter stage list upload)
+
+logic - preventing the same serial number entered twice if there are multiple quantities.

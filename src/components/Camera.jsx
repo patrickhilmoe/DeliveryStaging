@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Camera as CameraIcon, Database, X } from "lucide-react";
 
 export const Camera = ({
@@ -7,7 +7,9 @@ export const Camera = ({
   isProcessing,
   selectedProduct,
   setSelectedProduct,
+  extractedText
 }) => {
+  const [visible, setVisible] = useState(false)
   /*camera */
   const cameraInputRef = useRef(null);
   const cameraInputRefSN = useRef(null);
@@ -35,12 +37,24 @@ export const Camera = ({
   //   }
   // };
 
-    const handleFileChangeSN = (event) => {
+  const handleFileChangeSN = (event) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onCaptureSN(file, selectedProduct.id);
     }
   };
+
+  const testText = ["word", "placed", "here", "making", "it", "nice", "and", "long!", "word", "placed", "here", "making", "it", "nice", "and", "long!", "word", "placed", "here", "making", "it", "nice", "and", "long!", "word", "placed", "here", "making", "it", "nice", "and", "long!"]
+
+  const ocrDisplayResult = (extractedText) => {
+    if(extractedText) {
+      let textArr = extractedText.map(a => a.description)
+      const text = textArr.join("... ")
+      return (
+        <p>{text}</p>
+      )
+    }
+  }
 
   return (
     <div className=" bg-white rounded-2xl shadow-xl p-2">
@@ -85,8 +99,8 @@ export const Camera = ({
             </button>
           </div>
         )}
-          <>
-            {/* <button
+        <>
+          {/* <button
               onClick={handleCameraCapture}
               disabled={isProcessing}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mb-4"
@@ -94,15 +108,26 @@ export const Camera = ({
               <CameraIcon className="w-5 h-5" />
               Take Model/SN Picture
             </button> */}
-            <button
-              onClick={handleCameraCaptureSN}
-              disabled={isProcessing}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              <CameraIcon className="w-5 h-5" />
-              Take S/N Picture
-            </button>
-          </>
+          <button
+            onClick={handleCameraCaptureSN}
+            disabled={isProcessing}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+          >
+            <CameraIcon className="w-5 h-5" />
+            Take S/N Picture
+          </button>
+          {extractedText && 
+          <button
+          onClick={() => setVisible(!visible)}
+          className="bg-sky-600 hover:bg-sky-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 mt-5"
+          >
+            See Scan Result
+          </button>
+          }
+        </>
+      </div>
+      <div>
+        {visible && ocrDisplayResult(extractedText)}
       </div>
       {/* Hidden file inputs */}
       {/* model and serial number capture */}

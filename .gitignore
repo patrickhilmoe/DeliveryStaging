@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-src/data
+progressnotes
 
 # Editor directories and files
 .vscode/*
