@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
+import { downloadProductsAsCSV } from "./utils/csvExport";
 // Temporary serials data import
 // import { TimesaversSerial } from "./data/testing_data/Stock-Test-File-Array";
 
@@ -48,7 +49,6 @@ function App() {
   );
 
   // firebase start
-  // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
@@ -316,6 +316,8 @@ function App() {
     }
   }
 
+  // console.log(JSON.parse(localStorage.getItem("stock")))
+
   // local model match without promise from stock data - using TEMPORARY TimesaversSerial data
   function localModelMatch(match) {
     console.log("model to match batch of local stock:", match);
@@ -323,9 +325,15 @@ function App() {
     // const localMatches = TimesaversSerial.filter(
     //   (item) => item.StockNumber === match
     // );
-    const localMatches = stock.filter(
+    const localStorageStock = localStorage.getItem("stock")
+    const localStorageStockParse = JSON.parse(localStorageStock)
+        const localMatches = localStorageStockParse.filter(
       (item) => item.StockNumber === match
     );
+    // filter matches using state stored stock
+    // const localMatches = stock.filter(
+    //   (item) => item.StockNumber === match
+    // );
     setLocalMatch(localMatches);
     console.log("Local matches found:", localMatches);
     return localMatches;
@@ -621,7 +629,8 @@ function App() {
 
           <div className="grid lg:grid-cols-10 grid-cols-1 gap-2">
             {/* Left Column */}
-            <div className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent`}>
+            <div style={{ pointerEvents: (localStorage.getItem("stock")) ? "auto" : "none" }} className={"space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent"}>
+            {/* <div style={{ display: (localStorage.getItem("stock")) ? "pointer-events-auto" : "pointer-events-none" }} className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent`}> */}
               <Camera
                 // onCapture={handleCapture}
                 onCaptureSN={handleCaptureSN}
@@ -645,6 +654,7 @@ function App() {
                 onSerialNumberUpdate={handleSerialNumberUpdate2}
                 selectedDate={selectedDate}
                 noEdit={noEdit}
+                onDownloadCSV={() => downloadProductsAsCSV(stageList)}
               />
             </div>
           </div>

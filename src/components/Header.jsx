@@ -66,6 +66,7 @@ export const Header = ({
         updatedKeyStockArr.push(updatedKeysStockObj);
       });
       setStock(updatedKeyStockArr);
+      localStorage.setItem("stock", JSON.stringify(updatedKeyStockArr)); // save to local storage
       setNoEdit("pointer-event-auto")
       console.log("updated data:", updatedKeyStockArr);
       //   setNoEdit(!blur);
@@ -140,7 +141,7 @@ export const Header = ({
           }
         </button>
       </div>
-      <div style={{ display: (noEdit === "pointer-events-auto") ? "none" : "block" }} className="mb-2 ml-5">
+      <div className="mb-2 ml-5">
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
           onClick={() => fileRef.current.click()}

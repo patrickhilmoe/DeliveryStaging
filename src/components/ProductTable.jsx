@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Save,
   CreditCard as Edit3,
+  Download
 } from "lucide-react";
 
 export const ProductTable = ({
@@ -19,6 +20,7 @@ export const ProductTable = ({
   onSerialNumberUpdate,
   selectedDate,
   noEdit,
+  onDownloadCSV
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -145,6 +147,14 @@ export const ProductTable = ({
               </div>
             </>
           )}
+                      <button
+              onClick={onDownloadCSV}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              title="Download as CSV"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
         </div>
 
         <div className="relative">
@@ -159,7 +169,8 @@ export const ProductTable = ({
         </div>
       </div>
 
-      <div className={`${noEdit} overflow-x-auto`}>
+      <div style={{ pointerEvents: (localStorage.getItem("stock")) ? "auto" : "none" }} className={"overflow-x-auto"}>
+      {/* <div className={`${noEdit} overflow-x-auto`}> */}
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">

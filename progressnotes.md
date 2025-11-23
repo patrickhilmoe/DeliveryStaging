@@ -1,7 +1,9 @@
 # OCR Appliance Model and Serial Number Scanner
 
 notes:
+button to export file as csv (to store a back up on excel)
 Finalizing - clean up unused functions and commented sections. write notes for Luke's review
+note to self - how to know how much space is taken up in github? if there are too big of files...
 layout - scrolling on tablet left to right is too long
     -potentially fixed - test with tablet
 layout/logic - flag s/n area if manually entered
