@@ -19,7 +19,6 @@ export const ProductTable = ({
   serialMatch,
   onSerialNumberUpdate,
   selectedDate,
-  noEdit,
   onDownloadCSV
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");

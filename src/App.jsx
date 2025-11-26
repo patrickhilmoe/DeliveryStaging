@@ -540,8 +540,6 @@ function App() {
             setStageList={setStageList}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            visibleTest={visibleTest}
-            setVisibleTest={setVisibleTest}
             db={db}
             uploadData={uploadData}
           />
@@ -605,7 +603,6 @@ function App() {
                 serialMatch={serialMatch}
                 onSerialNumberUpdate={handleSerialNumberUpdate}
                 selectedDate={selectedDate}
-                noEdit={noEdit}
                 onDownloadCSV={() => downloadProductsAsCSV(stageList)}
               />
             </div>
