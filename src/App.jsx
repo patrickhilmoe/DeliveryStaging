@@ -17,8 +17,6 @@ import {
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
 import { downloadProductsAsCSV } from "./utils/csvExport";
-// Temporary serials data import
-// import { TimesaversSerial } from "./data/testing_data/Stock-Test-File-Array";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
@@ -27,21 +25,12 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-  // restrict editing unless stock report is uploaded locally
-  const [noEdit, setNoEdit] = useState("pointer-events-none");
-  // Inventory Model Serial Report
-  const [stock, setStock] = useState([]);
-  // Staging list
-  const [stageList, setStageList] = useState([]);
-  // matched Timesavers model/serials
-  const [localMatch, setLocalMatch] = useState([]);
-  // OCR text array
-  const [localOCR, setLocalOCR] = useState([]);
-  // Matched Model Number
-  const [modelMatch, setModelMatch] = useState(null);
-  // Matched Serial Number
-  const [serialMatch, setSerialMatch] = useState(null);
-  const [visibleTest, setVisibleTest] = useState(false);
+  const [stock, setStock] = useState([]);   // Inventory Model Serial Report (using localStorage at this point)
+  const [stageList, setStageList] = useState([]);   // Staging list
+  const [localMatch, setLocalMatch] = useState([]);   // matched Timesavers model/serials
+  const [localOCR, setLocalOCR] = useState([]);   // OCR text array
+  const [modelMatch, setModelMatch] = useState(null); // Matched Model Number
+  const [serialMatch, setSerialMatch] = useState(null);   // Matched Serial Number
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
@@ -66,12 +55,6 @@ function App() {
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // upload objects as separate documents to a collection
-  const objectsToUpload = [
-    { name: "Product X", category: "Electronics" },
-    { name: "Product Y", category: "Clothing" },
-  ];
-
   async function uploadObjectsAsDocs(collectionPath, objects) {
     console.log("Uploading objects to collection:", collectionPath, objects);
     const collectionRef = collection(db, collectionPath);
@@ -81,27 +64,10 @@ function App() {
     console.log("Objects uploaded as separate documents successfully!");
   }
 
-  // set current date for firebase upload
-  let date = new Date().getDate(); //Current Date
-  let month = new Date().getMonth() + 1; //Current Month
-  let year = new Date().getFullYear(); //Current Year
-  let todayDate = year + "-" + month + "-" + date;
-
     // define collection name based on selected date  
     const collectionName = selectedDate;
     // set placeholder the serial number
     const serialPlaceholder = "nsy"
-
-  // todo: when ts stock from firebase, boolean to update state item to hide button
-
-  // const updateDate = (date) => {
-  //   const wordArray = date.split("/");
-  //   const storeYear = wordArray.pop()
-  //   const yearFirst = `20${storeYear}`; // adjust for 20xx year
-  //   wordArray.unshift(yearFirst);
-  //   const newDate = wordArray.join("-");
-  //   return newDate;
-  // };
 
   const updateDate = (dateInput) => {
     if (dateInput === null || dateInput === undefined) return "";
@@ -168,7 +134,7 @@ function App() {
       }
       updatedKeysStockObj.id = id++;
       updatedKeysStockObj.SerialNumber = []; // add empty SN field for later update
-      // crete and object with multiple serial numbers if quantity > 1
+      // create an object with multiple serial numbers if quantity > 1
       let qty = 1
       console.log("qty to ship is value of: ", typeof updatedKeysStockObj.QuantityToShip, "length is: ", updatedKeysStockObj.QuantityToShip.length)
       if(updatedKeysStockObj.QuantityToShip.length > 2) {
@@ -236,6 +202,8 @@ function App() {
   }, [auth]);
   // firebase end
 
+
+
   const analyzeImage = async (imageData) => {
     try {
       if (!imageData) {
@@ -284,7 +252,7 @@ function App() {
     }
   };
 
-  // Match product model numbers from stock data to extracted text
+  // Match product model numbers from stock data to extracted text ** keep in case of matching model numbers
   function matchProduct(textAnnotations) {
     // ensure we have an array to work with (fall back to state if no arg)
     const annotations = Array.isArray(textAnnotations)
@@ -315,8 +283,6 @@ function App() {
       }
     }
   }
-
-  // console.log(JSON.parse(localStorage.getItem("stock")))
 
   // local model match without promise from stock data - using TEMPORARY TimesaversSerial data
   function localModelMatch(match) {
@@ -383,7 +349,7 @@ function App() {
 
     return null;
   }
-  // ** redunant to capture image text with model and serial number
+  // ** redunant to capture image text with model and serial number ** keep in case of matching model number
   // const handleCapture = useCallback(async (imageData, productId) => {
   //   // setCapturedImage(imageData);
   //   setIsProcessing(true);
@@ -430,7 +396,7 @@ function App() {
   //       };
   //       console.log("Matching serial is:", matchingSerial);
   //     }
-  //     handleSerialNumberUpdate2(productId, matchingSerial, collectionName);
+  //     handleSerialNumberUpdate(productId, matchingSerial, collectionName);
 
   //     // setProcessingStatus('Finding Serial Number...');
   //     setModelMatch(null)
@@ -445,8 +411,8 @@ function App() {
   //   }
   // });
 
-  // capture image text with only serial number and selected model number
-    const handleCaptureSN = useCallback(async (imageData, productId) => {
+  // capture image text with only serial number and selected model number  
+  const handleCaptureSN = useCallback(async (imageData, productId) => {
     // setCapturedImage(imageData);
     setIsProcessing(true);
     setProcessingStatus("Initializing OCR...");
@@ -472,7 +438,7 @@ function App() {
       };
       console.log("Matching serial is:", matchingSerial.TrackingNumber);
       console.log("matching model number is:" , selectedProduct, "with ts stock mode:", matchingSerial.StockNumber)
-      handleSerialNumberUpdate2(productId, matchingSerial.TrackingNumber, collectionName);
+      handleSerialNumberUpdate(productId, matchingSerial.TrackingNumber, collectionName);
 
       setProcessingStatus("");
     } catch (error) {
@@ -500,7 +466,7 @@ function App() {
     setModelMatch(null);
   }, []);
 
-  async function handleSerialNumberUpdate2(
+  async function handleSerialNumberUpdate(
     productId,
     newSerial,
     collectionPath,
@@ -514,8 +480,7 @@ function App() {
       }
     });
     // update the specific index in the serial number array
-    console.log("Current obj is:", snObj);
-    // const snArray = snObj[0].SerialNumber
+    // console.log("Current obj is:", snObj);
     const snArray = Array.isArray(snObj[0].SerialNumber) ? [...snObj[0].SerialNumber] : [];
     console.log("Current SN array is:", snArray);
     if (idx) { // update using index when manually making changes
@@ -550,22 +515,12 @@ function App() {
         )
       );
 
-      console.log("Updated product", docId, "with serial number", newSerial);
-      console.log("Updated product", docId, "with serial number", snArray);
+      // console.log("Updated product", docId, "with serial number", newSerial);
+      // console.log("Updated product", docId, "with serial number", snArray);
     } catch (err) {
       console.error("Failed to update serial:", err);
     }
   }
-
-  const handleSerialNumberUpdate = useCallback((productId, newSerial) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === productId
-          ? { ...product, serialNumber: newSerial }
-          : product
-      )
-    );
-  }, []);
 
   // If not signed in, show sign-in page
   if (!isSignedIn) {
@@ -580,10 +535,7 @@ function App() {
         <div className="">
         <div className="flex mb-4 justify-between">
           <Header
-            stock={stock}
             setStock={setStock}
-            noEdit={noEdit}
-            setNoEdit={setNoEdit}
             stageList={stageList}
             setStageList={setStageList}
             selectedDate={selectedDate}
@@ -651,7 +603,7 @@ function App() {
                 selectedProduct={selectedProduct}
                 onProductSelect={handleProductSelect}
                 serialMatch={serialMatch}
-                onSerialNumberUpdate={handleSerialNumberUpdate2}
+                onSerialNumberUpdate={handleSerialNumberUpdate}
                 selectedDate={selectedDate}
                 noEdit={noEdit}
                 onDownloadCSV={() => downloadProductsAsCSV(stageList)}

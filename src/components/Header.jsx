@@ -3,17 +3,11 @@ import { useRef } from "react";
 import { Calendar } from "lucide-react";
 
 export const Header = ({
-  stock,
   setStock,
-  noEdit,
-  setNoEdit,
   stageList,
   setStageList,
   selectedDate,
   setSelectedDate,
-  visibleTest,
-  setVisibileTest,
-  db,
   uploadData,
 }) => {
 
@@ -67,7 +61,6 @@ export const Header = ({
       });
       setStock(updatedKeyStockArr);
       localStorage.setItem("stock", JSON.stringify(updatedKeyStockArr)); // save to local storage
-      setNoEdit("pointer-event-auto")
       console.log("updated data:", updatedKeyStockArr);
       //   setNoEdit(!blur);
     } catch (err) {
