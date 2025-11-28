@@ -9,7 +9,7 @@ layout/logic - flag s/n area if manually entered
 
 logic - if a process fails, a new picture can't be processed unless refreshed
 
-layout - highlight the stock button if not uploaded. also make it disappear when uploaded.
+layout - highlight the stock button if not uploaded. also make it disappear when uploaded. there is lag time with the State
 
 logic - set levels of access based on IAM? admin/edit/read (concerned user level can press buttons that will alter stage list upload)
 
