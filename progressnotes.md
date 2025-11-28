@@ -1,4 +1,4 @@
-# OCR Appliance Model and Serial Number Scanner
+**Progress Notes**
 
 notes:
 button to export file as csv (to store a back up on excel) - it kind of works
