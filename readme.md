@@ -8,7 +8,7 @@ A large excel file of inventory needs to be uploaded to localStorage before mode
 
 After selecting an item and taking a photo, the app compares the locally stored inventory list with the OCR text; comparing the two arrays. When it finds a matching serial number it is saved to the database.
 
-app link: <staginglist.netlify.app>
+app link: staginglist.netlify.app
 
 **For Testing** 
 
