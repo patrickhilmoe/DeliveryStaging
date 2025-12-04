@@ -206,7 +206,7 @@ export const ProductTable = ({
               </th>
               <th className="px-4 py-2 text-left">
                 <button
-                  // onClick={() => handleSort("QuantityToShip")}
+                  onClick={() => handleSort("QuantityToShip")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Quantity
