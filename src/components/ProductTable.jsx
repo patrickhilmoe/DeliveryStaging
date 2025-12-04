@@ -6,7 +6,7 @@ import {
   AlertCircle,
   Save,
   CreditCard as Edit3,
-  Download
+  Download,
 } from "lucide-react";
 
 export const ProductTable = ({
@@ -19,7 +19,7 @@ export const ProductTable = ({
   serialMatch,
   onSerialNumberUpdate,
   selectedDate,
-  onDownloadCSV
+  onDownloadCSV,
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -42,8 +42,8 @@ export const ProductTable = ({
       );
     }
     return filtered.sort((a, b) => {
-      const aValue = a[sortBy].toLowerCase();
-      const bValue = b[sortBy].toLowerCase();
+      const aValue = String(a?.[sortBy] ?? "").toLowerCase();
+      const bValue = String(b?.[sortBy] ?? "").toLowerCase();
       const comparison = aValue.localeCompare(bValue);
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -112,10 +112,10 @@ export const ProductTable = ({
     setEditingSerial((prev) => ({ ...prev, [productId]: false }));
     // setSerialInputs((prev) => ({ ...prev, [productId]: [] }));
     setSerialInputs((prev) => {
-      const next = { ... prev };
+      const next = { ...prev };
       delete next[productId];
       return next;
-    })
+    });
   };
 
   const handleSerialInputChange = (productId, snIdx, value) => {
@@ -146,14 +146,14 @@ export const ProductTable = ({
               </div>
             </>
           )}
-                      <button
-              onClick={onDownloadCSV}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-              title="Download as CSV"
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
-            </button>
+          <button
+            onClick={onDownloadCSV}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+            title="Download as CSV"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
         </div>
 
         <div className="relative">
@@ -168,8 +168,13 @@ export const ProductTable = ({
         </div>
       </div>
 
-      <div style={{ pointerEvents: (localStorage.getItem("stock")) ? "auto" : "none" }} className={"overflow-x-auto"}>
-      {/* <div className={`${noEdit} overflow-x-auto`}> */}
+      <div
+        style={{
+          pointerEvents: localStorage.getItem("stock") ? "auto" : "none",
+        }}
+        className={"overflow-x-auto"}
+      >
+        {/* <div className={`${noEdit} overflow-x-auto`}> */}
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
@@ -342,7 +347,10 @@ export const ProductTable = ({
                             </span>
                             <button
                               onClick={() =>
-                                handleSerialEdit(product.id, product.SerialNumber)
+                                handleSerialEdit(
+                                  product.id,
+                                  product.SerialNumber
+                                )
                               }
                               className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                               title="Edit serial number"
