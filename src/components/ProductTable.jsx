@@ -59,16 +59,17 @@ export const ProductTable = ({
     }
   };
 
+
   // row highlighting green not working
-  const getRowClassName = (id) => {
+  const getRowClassName = (id, product) => {
     // console.log("matchedProducts?.id is: ", matchedProducts?.id)
     // console.log("serialMatch is: ", serialMatch)
     // console.log("matchedProducts.length is: ", matchedProducts)
-    if (matchedProducts?.id === id && serialMatch && matchedProducts) {
-      return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
-    }
     if (selectedProduct?.id === id) {
       return "bg-blue-50 border-blue-200 shadow-sm ring-2 ring-blue-300";
+    }
+    if (!product?.SerialNumber.includes("nsy")) {
+      return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
     }
     return "bg-white hover:bg-gray-50 cursor-pointer";
   };
@@ -232,7 +233,7 @@ export const ProductTable = ({
               </th>
               <th className="px-4 py-2 text-left">
                 <button
-                  // onClick={() => handleSort("SerialNumber")}
+                  onClick={() => handleSort("SerialNumber")}
                   className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Serial Number
@@ -252,7 +253,7 @@ export const ProductTable = ({
                   key={product.id}
                   onClick={() => onProductSelect(product)}
                   className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                    product.id
+                    product.id, product
                   )}`}
                   style={{
                     animationDelay: `${index * 50}ms`,
