@@ -7,6 +7,7 @@ import {
   Save,
   CreditCard as Edit3,
   Download,
+  ArrowDownWideNarrow 
 } from "lucide-react";
 
 export const ProductTable = ({
@@ -25,6 +26,7 @@ export const ProductTable = ({
   const [sortOrder, setSortOrder] = useState("asc");
   const [editingSerial, setEditingSerial] = useState({});
   const [serialInputs, setSerialInputs] = useState({});
+  const [sortLoc, setSortLoc] = useState(["001"]);
 
   const sortedAndFilteredProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : [];
@@ -58,7 +60,6 @@ export const ProductTable = ({
       setSortOrder("asc");
     }
   };
-
 
   // row highlighting green not working
   const getRowClassName = (id, product) => {
@@ -167,14 +168,41 @@ export const ProductTable = ({
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           />
         </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+      <button
+        // onClick={() => setSortLoc(["001", "200", "300+", "400+", "500+", "600+", "700+"])}
+        onClick={() => setSortLoc(["001"])}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+        title="Download as CSV"
+      >
+        <ArrowDownWideNarrow  className="w-4 h-4" />
+        Main
+      </button>
+            <button
+        onClick={() => setSortLoc(["500","700"])}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+        title="Download as CSV"
+      >
+        <ArrowDownWideNarrow  className="w-4 h-4" />
+        Sequoia
+      </button>
+            <button
+        onClick={() => setSortLoc(["300","400"])}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+        title="Download as CSV"
+      >
+        <ArrowDownWideNarrow  className="w-4 h-4" />
+        Meridian
+      </button>
+        </div>
       </div>
-
       <div
         style={{
           pointerEvents: localStorage.getItem("stock") ? "auto" : "none",
         }}
         className={"overflow-x-auto"}
       >
+        <div></div>
         {/* <div className={`${noEdit} overflow-x-auto`}> */}
         <table className="w-full">
           <thead>
@@ -247,131 +275,149 @@ export const ProductTable = ({
             </tr>
           </thead>
           <tbody>
-            {sortedAndFilteredProducts.length > 0 ? (
-              sortedAndFilteredProducts.map((product, index) => (
-                <tr
-                  key={product.id}
-                  onClick={() => onProductSelect(product)}
-                  className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                    product.id, product
-                  )}`}
-                  style={{
-                    animationDelay: `${index * 50}ms`,
-                    animation: "fadeIn 0.3s ease-out forwards",
-                  }}
-                >
-                  <td className="px-4 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium text-gray-900">
-                        {product.StockShipped}
-                      </span>
-                      {getMatchIcon(product.id)}
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 text-gray-700">
-                    {product.Description1}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700">
-                    {product.QuantityToShip}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700">
-                    {product.LocationNumber}
-                  </td>
-                  {/* added serial number editing below */}
-                  <td className="px-4 py-2">
-                    {(() => {
-                      // prefer local inputs (most recent edit), otherwise coerce product.SerialNumber to array
-                      const serialList =
-                        serialInputs[product.id] ??
-                        (Array.isArray(product.SerialNumber)
-                          ? product.SerialNumber
-                          : product.SerialNumber
-                          ? [product.SerialNumber]
-                          : []);
+            {sortedAndFilteredProducts.length > 0
+              ? sortedAndFilteredProducts.filter(product => sortLoc.includes(product.LocationNumber)).map((product, index) => (
+                  <tr
+                    key={product.id}
+                    onClick={() => onProductSelect(product)}
+                    className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
+                      product.id,
+                      product
+                    )}`}
+                    style={{
+                      animationDelay: `${index * 50}ms`,
+                      animation: "fadeIn 0.3s ease-out forwards",
+                    }}
+                  >
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-medium text-gray-900">
+                          {product.StockShipped}
+                        </span>
+                        {getMatchIcon(product.id)}
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {product.Description1}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {product.QuantityToShip}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700">
+                      {product.LocationNumber}
+                    </td>
+                    {/* added serial number editing below */}
+                    <td className="px-4 py-2">
+                      {(() => {
+                        // prefer local inputs (most recent edit), otherwise coerce product.SerialNumber to array
+                        const serialList =
+                          serialInputs[product.id] ??
+                          (Array.isArray(product.SerialNumber)
+                            ? product.SerialNumber
+                            : product.SerialNumber
+                            ? [product.SerialNumber]
+                            : []);
 
-                      return serialList.map((sn, idx) => {
-                        const existing =
-                          serialInputs[product.id] &&
-                          serialInputs[product.id][idx];
-                        const value =
-                          existing ??
-                          (typeof sn === "object" ? sn.serial : sn) ??
-                          "";
+                        return serialList.map((sn, idx) => {
+                          const existing =
+                            serialInputs[product.id] &&
+                            serialInputs[product.id][idx];
+                          const value =
+                            existing ??
+                            (typeof sn === "object" ? sn.serial : sn) ??
+                            "";
 
-                        if (editingSerial[product.id]) {
+                          if (editingSerial[product.id]) {
+                            return (
+                              <div
+                                key={`${product.id}-sn-${idx}`}
+                                className="flex items-center gap-2"
+                              >
+                                <input
+                                  type="text"
+                                  value={value}
+                                  onChange={(e) =>
+                                    handleSerialInputChange(
+                                      product.id,
+                                      idx,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter serial..."
+                                  autoFocus={idx === 0}
+                                />
+                                <button
+                                  onClick={() =>
+                                    handleSerialSave(product.id, idx)
+                                  }
+                                  className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                                  title="Save"
+                                >
+                                  <Save className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleSerialCancel(product.id)}
+                                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                                  title="Cancel"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            );
+                          }
+
                           return (
                             <div
                               key={`${product.id}-sn-${idx}`}
                               className="flex items-center gap-2"
                             >
-                              <input
-                                type="text"
-                                value={value}
-                                onChange={(e) =>
-                                  handleSerialInputChange(
-                                    product.id,
-                                    idx,
-                                    e.target.value
-                                  )
-                                }
-                                className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Enter serial..."
-                                autoFocus={idx === 0}
-                              />
+                              <span className="font-mono text-sm text-gray-700 min-w-[100px]">
+                                {value}
+                              </span>
                               <button
                                 onClick={() =>
-                                  handleSerialSave(product.id, idx)
+                                  handleSerialEdit(
+                                    product.id,
+                                    product.SerialNumber
+                                  )
                                 }
-                                className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
-                                title="Save"
+                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Edit serial number"
                               >
-                                <Save className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleSerialCancel(product.id)}
-                                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
-                                title="Cancel"
-                              >
-                                ×
+                                <Edit3 className="w-4 h-4" />
                               </button>
                             </div>
                           );
-                        }
-
-                        return (
-                          <div
-                            key={`${product.id}-sn-${idx}`}
-                            className="flex items-center gap-2"
-                          >
-                            <span className="font-mono text-sm text-gray-700 min-w-[100px]">
-                              {value}
-                            </span>
-                            <button
-                              onClick={() =>
-                                handleSerialEdit(
-                                  product.id,
-                                  product.SerialNumber
-                                )
-                              }
-                              className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                              title="Edit serial number"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        );
-                      });
-                    })()}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr className="justify-center">
-                <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                  No products to display.
-                </td>
-              </tr>
-            )}
+                        });
+                      })()}
+                    </td>
+                  </tr>
+                ))
+              : ((
+                  <tr className="justify-center">
+                    <td
+                      colSpan={3}
+                      className="px-4 py-2 text-center text-gray-500"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-medium text-gray-900">
+                          Install
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ),
+                (
+                  <tr className="justify-center">
+                    <td
+                      colSpan={3}
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      No products to display.
+                    </td>
+                  </tr>
+                ))}
           </tbody>
         </table>
       </div>

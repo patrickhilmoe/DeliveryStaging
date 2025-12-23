@@ -1,9 +1,11 @@
 **Progress Notes**
 
 notes:
+cycle API keys
+
+highlight install lines
 
 results from testing
-highlight rows with completed serial numbers
 GE serial numbers sometimes have an extra letter at the end
 sequoia, meridian, and hannegan are all mixed together (it would be nice to have meridian and sequoia on a separate list)
 
