@@ -41,23 +41,23 @@ function App() {
   // https://firebase.google.com/docs/web/setup#available-libraries
 
   // Your web app's Firebase configuration
-  // const firebaseConfig = {
-  //   apiKey: "AIzaSyC3qPVaaBjUhUG5dtAgjzLEQGoCopDYhxU",
-  //   authDomain: "dandbcheckofftest.firebaseapp.com",
-  //   projectId: "dandbcheckofftest",
-  //   storageBucket: "dandbcheckofftest.firebasestorage.app",
-  //   messagingSenderId: "230556784113",
-  //   appId: "1:230556784113:web:e5ffdc10d56d189733a050",
-  // };
-
-    const firebaseConfig = {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3qPVaaBjUhUG5dtAgjzLEQGoCopDYhxU",
+    authDomain: "dandbcheckofftest.firebaseapp.com",
+    projectId: "dandbcheckofftest",
+    storageBucket: "dandbcheckofftest.firebasestorage.app",
+    messagingSenderId: "230556784113",
+    appId: "1:230556784113:web:e5ffdc10d56d189733a050",
   };
+
+  //   const firebaseConfig = {
+  //   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  //   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  //   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  //   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  //   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  //   appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  // };
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -234,8 +234,8 @@ function App() {
         typeof imageData === "string" ? imageData : await toBase64(imageData);
       const base64Image = dataUrl.replace(/^data:image\/[a-zA-Z]+;base64,/, "");
 
-      // const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
-      const apiKey = process.env.REACT_APP_OCR_API_KEY;
+      const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
+      // const apiKey = process.env.REACT_APP_OCR_API_KEY;
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
       const requestData = {
