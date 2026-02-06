@@ -25,16 +25,16 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [stock, setStock] = useState([]);   // Inventory Model Serial Report (using localStorage at this point)
-  const [stageList, setStageList] = useState([]);   // Staging list
-  const [localMatch, setLocalMatch] = useState([]);   // matched Timesavers model/serials
-  const [localOCR, setLocalOCR] = useState([]);   // OCR text array
+  const [stock, setStock] = useState([]); // Inventory Model Serial Report (using localStorage at this point)
+  const [stageList, setStageList] = useState([]); // Staging list
+  const [localMatch, setLocalMatch] = useState([]); // matched Timesavers model/serials
+  const [localOCR, setLocalOCR] = useState([]); // OCR text array
   const [modelMatch, setModelMatch] = useState(null); // Matched Model Number
-  const [serialMatch, setSerialMatch] = useState(null);   // Matched Serial Number
+  const [serialMatch, setSerialMatch] = useState(null); // Matched Serial Number
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
 
   // firebase start
@@ -73,10 +73,18 @@ function App() {
     console.log("Objects uploaded as separate documents successfully!");
   }
 
-    // define collection name based on selected date  
-    const collectionName = selectedDate;
-    // set placeholder the serial number
-    const serialPlaceholder = "nsy"
+    async function uploadObjectsAsDocsAdd(collectionPath, object) {
+    console.log("Uploading objects to collection:", collectionPath, object);
+    const collectionRef = collection(db, collectionPath);
+      await setDoc(doc(db, collectionPath, `${collectionPath}-${object.id}`), object);
+
+    console.log("Objects uploaded as separate documents successfully!");
+  }
+
+  // define collection name based on selected date
+  const collectionName = selectedDate;
+  // set placeholder the serial number
+  const serialPlaceholder = "nsy";
 
   const updateDate = (dateInput) => {
     if (dateInput === null || dateInput === undefined) return "";
@@ -93,7 +101,9 @@ function App() {
     // If Excel gives a numeric serial date (common)
     if (typeof dateInput === "number") {
       // convert Excel serial to JS Date (Excel epoch handling)
-      const jsDate = new Date((Math.round(dateInput) - 25569) * 24 * 60 * 60 * 1000);
+      const jsDate = new Date(
+        (Math.round(dateInput) - 25569) * 24 * 60 * 60 * 1000,
+      );
       if (!isNaN(jsDate)) {
         const yyyy = jsDate.getFullYear();
         const mm = String(jsDate.getMonth() + 1).padStart(2, "0");
@@ -129,7 +139,7 @@ function App() {
   const uploadData = (data) => {
     console.log("Uploading data...", data);
     // Clean keys of stock data from Excel upload
-    let id = 0
+    let id = 0;
     if (!(stageList.length === 0)) {
       id = stageList.length;
       // todo: error handling to avoid accidental duplicates
@@ -144,21 +154,31 @@ function App() {
       updatedKeysStockObj.id = id++;
       updatedKeysStockObj.SerialNumber = []; // add empty SN field for later update
       // create an object with multiple serial numbers if quantity > 1
-      let qty = 1
-      console.log("qty to ship is value of: ", typeof updatedKeysStockObj.QuantityToShip, "length is: ", updatedKeysStockObj.QuantityToShip.length)
-      if(updatedKeysStockObj.QuantityToShip.length > 2) {
-        let splitQty = updatedKeysStockObj.QuantityToShip.split(" ")
-        qty = splitQty[0]
-        console.log("quantity is of number and text is: ", qty)
+      let qty = 1;
+      console.log(
+        "qty to ship is value of: ",
+        typeof updatedKeysStockObj.QuantityToShip,
+        "length is: ",
+        updatedKeysStockObj.QuantityToShip.length,
+      );
+      if (updatedKeysStockObj.QuantityToShip.length > 2) {
+        let splitQty = updatedKeysStockObj.QuantityToShip.split(" ");
+        qty = splitQty[0];
+        console.log("quantity is of number and text is: ", qty);
       } else {
         qty = Number(updatedKeysStockObj.QuantityToShip);
       }
-      console.log("qty is: ", typeof qty, " and length of ", qty.length)
-      console.log("Quantity to ship is:", updatedKeysStockObj.QuantityToShip, "and type is:", typeof qty);
+      console.log("qty is: ", typeof qty, " and length of ", qty.length);
+      console.log(
+        "Quantity to ship is:",
+        updatedKeysStockObj.QuantityToShip,
+        "and type is:",
+        typeof qty,
+      );
       console.log("updated object looks like this: ", updatedKeysStockObj);
-        for (let i = 1; i <= qty; i++) {
-          updatedKeysStockObj.SerialNumber.push(serialPlaceholder);
-        }
+      for (let i = 1; i <= qty; i++) {
+        updatedKeysStockObj.SerialNumber.push(serialPlaceholder);
+      }
       updatedKeyStockArr.push(updatedKeysStockObj);
     });
     const date = updatedKeyStockArr[0].ShippingDate;
@@ -166,6 +186,21 @@ function App() {
     console.log("Upload date is:", formattedDate);
     console.log("Stock updated:", updatedKeyStockArr);
     uploadObjectsAsDocs(formattedDate, updatedKeyStockArr);
+  };
+
+  const handleProductAdd = (product) => {
+    console.log("Adding new product:", product);
+    let id = 0;
+    if (!(stageList.length === 0)) {
+      id = stageList.length;
+      // todo: error handling to avoid accidental duplicates
+    }
+    product.id = id++;
+    for (let i = 1; i <= product.QuantityToShip; i++) {
+      product.SerialNumber.push(serialPlaceholder);
+    }
+    console.log("New product to add is:", product);
+    uploadObjectsAsDocsAdd(selectedDate, product);
   };
 
   useEffect(() => {
@@ -180,7 +215,7 @@ function App() {
       },
       (error) => {
         console.error("onSnapshot error: ", error);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -210,8 +245,6 @@ function App() {
     return () => unsub();
   }, [auth]);
   // firebase end
-
-
 
   const analyzeImage = async (imageData) => {
     try {
@@ -252,7 +285,7 @@ function App() {
       const apiResponse = await axios.post(apiURL, requestData);
       console.log(
         "API textAnnotations response:",
-        apiResponse.data.responses[0].textAnnotations
+        apiResponse.data.responses[0].textAnnotations,
       );
       // alert(apiResponse.data.responses[0].fullTextAnnotation.text)
       return apiResponse.data.responses[0].textAnnotations;
@@ -268,16 +301,16 @@ function App() {
     const annotations = Array.isArray(textAnnotations)
       ? textAnnotations
       : Array.isArray(extractedText)
-      ? extractedText
-      : [];
+        ? extractedText
+        : [];
 
     const textArray = annotations
       .map((a) =>
         typeof a === "string"
           ? a
           : a?.description || a?.description === 0
-          ? a.description
-          : ""
+            ? a.description
+            : "",
       )
       .filter(Boolean);
 
@@ -297,14 +330,14 @@ function App() {
   // local model match without promise from stock data - using TEMPORARY TimesaversSerial data
   function localModelMatch(match) {
     console.log("model to match batch of local stock:", match);
-    //** keeping this commented out in case of testing 
+    //** keeping this commented out in case of testing
     // const localMatches = TimesaversSerial.filter(
     //   (item) => item.StockNumber === match
     // );
-    const localStorageStock = localStorage.getItem("stock")
-    const localStorageStockParse = JSON.parse(localStorageStock)
-        const localMatches = localStorageStockParse.filter(
-      (item) => item.StockNumber === match
+    const localStorageStock = localStorage.getItem("stock");
+    const localStorageStockParse = JSON.parse(localStorageStock);
+    const localMatches = localStorageStockParse.filter(
+      (item) => item.StockNumber === match,
     );
     // filter matches using state stored stock
     // const localMatches = stock.filter(
@@ -336,8 +369,8 @@ function App() {
 
     return null;
   }
-    // matching serial number based on selected product model number
-    function matchSerial2(text, stockMatchArray) {
+  // matching serial number based on selected product model number
+  function matchSerial2(text, stockMatchArray) {
     if (!Array.isArray(text) || !Array.isArray(stockMatchArray)) return null;
 
     for (const tsSerial of stockMatchArray) {
@@ -421,7 +454,7 @@ function App() {
   //   }
   // });
 
-  // capture image text with only serial number and selected model number  
+  // capture image text with only serial number and selected model number
   const handleCaptureSN = useCallback(async (imageData, productId) => {
     // setCapturedImage(imageData);
     setIsProcessing(true);
@@ -436,19 +469,28 @@ function App() {
 
       const model = selectedProduct.StockShipped;
       const stockMatchArray = localModelMatch(model);
-        console.table("Local stored matches:", stockMatchArray);
+      console.table("Local stored matches:", stockMatchArray);
       const matchingSerial = matchSerial2(text, stockMatchArray); // returns object with model and serial info
-      setMatchedProducts(matchingSerial)
+      setMatchedProducts(matchingSerial);
       if (!matchingSerial) {
-        console.log("triggering here")
-        stockMatchArray.length === 0 ?
-        alert("This model doesn't have a serial or isn't recieved yet.") : // if it is a model that doesn't have a serial or isn't recieved yet
-        alert("No matching serial number found in the image.");
+        console.log("triggering here");
+        stockMatchArray.length === 0
+          ? alert("This model doesn't have a serial or isn't recieved yet.") // if it is a model that doesn't have a serial or isn't recieved yet
+          : alert("No matching serial number found in the image.");
         return;
-      };
+      }
       console.log("Matching serial is:", matchingSerial.TrackingNumber);
-      console.log("matching model number is:" , selectedProduct, "with ts stock mode:", matchingSerial.StockNumber)
-      handleSerialNumberUpdate(productId, matchingSerial.TrackingNumber, collectionName);
+      console.log(
+        "matching model number is:",
+        selectedProduct,
+        "with ts stock mode:",
+        matchingSerial.StockNumber,
+      );
+      handleSerialNumberUpdate(
+        productId,
+        matchingSerial.TrackingNumber,
+        collectionName,
+      );
 
       setProcessingStatus("");
     } catch (error) {
@@ -480,7 +522,7 @@ function App() {
     productId,
     newSerial,
     collectionPath,
-    idx
+    idx,
   ) {
     console.log("Updating product", productId, "with serial number", newSerial);
     // serial number array of the same product id
@@ -491,29 +533,33 @@ function App() {
     });
     // update the specific index in the serial number array
     // console.log("Current obj is:", snObj);
-    const snArray = Array.isArray(snObj[0].SerialNumber) ? [...snObj[0].SerialNumber] : [];
+    const snArray = Array.isArray(snObj[0].SerialNumber)
+      ? [...snObj[0].SerialNumber]
+      : [];
     console.log("Current SN array is:", snArray);
-    if (idx) { // update using index when manually making changes
+    if (idx) {
+      // update using index when manually making changes
       console.log("Updating index:", idx, "with new serial:", newSerial);
       snArray[idx] = newSerial;
-    } else { // update the next placeholder serial
+    } else {
+      // update the next placeholder serial
       let idx = "";
       snArray.forEach((item, index) => {
         let val = true;
         if (val && item === serialPlaceholder) {
-          console.log("updating item:", item, "with serial: ", newSerial)
-          idx = index
+          console.log("updating item:", item, "with serial: ", newSerial);
+          idx = index;
           val = false;
         }
-      })
-      snArray[idx] = newSerial
+      });
+      snArray[idx] = newSerial;
     }
     console.log("Updated SN array is:", snArray);
     const docId = `${collectionPath}-${productId}`;
     // update entire serial number array in firestore
     try {
       await updateDoc(doc(db, collectionPath, docId), {
-        SerialNumber: snArray
+        SerialNumber: snArray,
       });
 
       // optimistic update so UI shows the new serial immediately
@@ -521,8 +567,8 @@ function App() {
         prev.map((p) =>
           p.id === docId || p.id === productId
             ? { ...p, SerialNumber: snArray }
-            : p
-        )
+            : p,
+        ),
       );
 
       // console.log("Updated product", docId, "with serial number", newSerial);
@@ -543,20 +589,20 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
         <div className="">
-        <div className="flex mb-4 justify-between">
-          <Header
-            setStock={setStock}
-            stageList={stageList}
-            setStageList={setStageList}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            db={db}
-            uploadData={uploadData}
-          />
-          <button onClick={authSignOut} className="icon-btn float-right">
-            <img src={signout} className="icon-img-btn" />
-          </button>
-        </div>
+          <div className="flex mb-4 justify-between">
+            <Header
+              setStock={setStock}
+              stageList={stageList}
+              setStageList={setStageList}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              db={db}
+              uploadData={uploadData}
+            />
+            <button onClick={authSignOut} className="icon-btn float-right">
+              <img src={signout} className="icon-img-btn" />
+            </button>
+          </div>
         </div>
         <div className="transition-all duration-500">
           {/* Header */}
@@ -570,8 +616,8 @@ function App() {
               </h1>
             </div>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
-              Upload the Stock File. Select a product below, then use your camera to
-              verify the serial number
+              Upload the Stock File. Select a product below, then use your
+              camera to verify the serial number
             </p>
           </div>
 
@@ -589,8 +635,15 @@ function App() {
 
           <div className="grid lg:grid-cols-10 grid-cols-1 gap-2">
             {/* Left Column */}
-            <div style={{ pointerEvents: (localStorage.getItem("stock")) ? "auto" : "none" }} className={"space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent"}>
-            {/* <div style={{ display: (localStorage.getItem("stock")) ? "pointer-events-auto" : "pointer-events-none" }} className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent`}> */}
+            <div
+              style={{
+                pointerEvents: localStorage.getItem("stock") ? "auto" : "none",
+              }}
+              className={
+                "space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent"
+              }
+            >
+              {/* <div style={{ display: (localStorage.getItem("stock")) ? "pointer-events-auto" : "pointer-events-none" }} className={`${noEdit} space-y-6 grid col-span-3 gap-6 sticky top-0 self-start z-20 bg-transparent`}> */}
               <Camera
                 // onCapture={handleCapture}
                 onCaptureSN={handleCaptureSN}
@@ -614,6 +667,7 @@ function App() {
                 onSerialNumberUpdate={handleSerialNumberUpdate}
                 selectedDate={selectedDate}
                 onDownloadCSV={() => downloadProductsAsCSV(stageList)}
+                onProductAdd={handleProductAdd}
               />
             </div>
           </div>

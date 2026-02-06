@@ -1,6 +1,11 @@
 **Progress Notes**
 
 notes:
+adding and removing product
+    -changing headers
+    -POST to firestore
+700 and 500+ etc, not showing up...
+
 cycle API keys
 
 highlight install lines
@@ -15,3 +20,6 @@ logic - preventing the same serial number entered twice if there are multiple qu
 button to export file as csv (to store a back up on excel) - it kind of works
 logic - if a process fails, a new picture can't be processed unless refreshed
 logic - set levels of access based on IAM? admin/edit/read (concerned user level can press buttons that will alter stage list upload)
+
+dandbcheckofftest
+https://firestore.googleapis.com/v1/projects/dandbcheckofftest/databases/2025-10-31/documents/2025-10-31-0/CustomerName

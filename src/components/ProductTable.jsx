@@ -7,7 +7,9 @@ import {
   Save,
   CreditCard as Edit3,
   Download,
-  ArrowDownWideNarrow 
+  ArrowDownWideNarrow,
+  Plus,
+  X,
 } from "lucide-react";
 
 export const ProductTable = ({
@@ -21,12 +23,21 @@ export const ProductTable = ({
   onSerialNumberUpdate,
   selectedDate,
   onDownloadCSV,
+  onProductAdd,
 }) => {
   const [sortBy, setSortBy] = useState("StockShipped");
   const [sortOrder, setSortOrder] = useState("asc");
   const [editingSerial, setEditingSerial] = useState({});
   const [serialInputs, setSerialInputs] = useState({});
   const [sortLoc, setSortLoc] = useState(["001"]);
+  const [isAddingRow, setIsAddingRow] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    StockShipped: "",
+    Description1: "",
+    QuantityToShip: "",
+    LocationNumber: "",
+    SerialNumber: [],
+  });
 
   const sortedAndFilteredProducts = useMemo(() => {
     const list = Array.isArray(products) ? products : [];
@@ -37,9 +48,11 @@ export const ProductTable = ({
       filtered = products.filter(
         (product) =>
           product.StockShipped.toLowerCase().includes(
-            searchQuery.toLowerCase()
+            searchQuery.toLowerCase(),
           ) ||
-          product.Description1.toLowerCase().includes(searchQuery.toLowerCase())
+          product.Description1.toLowerCase().includes(
+            searchQuery.toLowerCase(),
+          ),
         //|| product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
@@ -128,6 +141,43 @@ export const ProductTable = ({
     });
   };
 
+  const handleAddRow = () => {
+    setIsAddingRow(true);
+  };
+
+  const handleSaveNewProduct = () => {
+    if (newProduct.StockShipped && newProduct.Description1) {
+      const productToAdd = {
+        id: 0,
+        ...newProduct,
+      };
+      onProductAdd(productToAdd);
+      setNewProduct({
+        StockShipped: "",
+        Description1: "",
+        QuantityToShip: "",
+        LocationNumber: "",
+        SerialNumber: [],
+      });
+      setIsAddingRow(false);
+    }
+  };
+
+  const handleCancelNewProduct = () => {
+    setNewProduct({
+      StockShipped: "",
+      Description1: "",
+      QuantityToShip: "",
+      LocationNumber: "",
+      SerialNumber: [],
+    });
+    setIsAddingRow(false);
+  };
+
+  const handleNewProductChange = (field, value) => {
+    setNewProduct((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
       <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-slate-50 to-blue-50">
@@ -136,26 +186,37 @@ export const ProductTable = ({
             <Package className="w-5 h-5 text-blue-600" />
             Product Database
           </h2>
-          {matchedProducts && (
-            <>
-              {/* <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleAddRow}
+              disabled={isAddingRow}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              title="Add new product"
+            >
+              <Plus className="w-4 h-4" />
+              Add Product
+            </button>
+            {matchedProducts && (
+              <>
+                {/* <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                 <AlertCircle className="w-4 h-4" />
                 Model Number {matchedProducts} confirmed
               </div> */}
-              <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                <AlertCircle className="w-4 h-4" />
-                Serial Number {serialMatch} confirmed
-              </div>
-            </>
-          )}
-          <button
-            onClick={onDownloadCSV}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-            title="Download as CSV"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+                <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  Serial Number {serialMatch} confirmed
+                </div>
+              </>
+            )}
+            <button
+              onClick={onDownloadCSV}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              title="Download as CSV"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
         </div>
 
         <div className="relative">
@@ -169,31 +230,31 @@ export const ProductTable = ({
           />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-      <button
-        // onClick={() => setSortLoc(["001", "200", "300+", "400+", "500+", "600+", "700+"])}
-        onClick={() => setSortLoc(["001"])}
-        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-        title="Download as CSV"
-      >
-        <ArrowDownWideNarrow  className="w-4 h-4" />
-        Main
-      </button>
-            <button
-        onClick={() => setSortLoc(["500","700"])}
-        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-        title="Download as CSV"
-      >
-        <ArrowDownWideNarrow  className="w-4 h-4" />
-        Sequoia
-      </button>
-            <button
-        onClick={() => setSortLoc(["300","400"])}
-        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-        title="Download as CSV"
-      >
-        <ArrowDownWideNarrow  className="w-4 h-4" />
-        Meridian
-      </button>
+          <button
+            onClick={() => setSortLoc(["001", "200", "300+", "400+", "500+", "600+", "700+"])}
+            // onClick={() => setSortLoc(["001"])}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+            title="Download as CSV"
+          >
+            <ArrowDownWideNarrow className="w-4 h-4" />
+            Main
+          </button>
+          <button
+            onClick={() => setSortLoc(["500", "700"])}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+            title="Download as CSV"
+          >
+            <ArrowDownWideNarrow className="w-4 h-4" />
+            Sequoia
+          </button>
+          <button
+            onClick={() => setSortLoc(["300", "400"])}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+            title="Download as CSV"
+          >
+            <ArrowDownWideNarrow className="w-4 h-4" />
+            Meridian
+          </button>
         </div>
       </div>
       <div
@@ -275,125 +336,221 @@ export const ProductTable = ({
             </tr>
           </thead>
           <tbody>
-            {sortedAndFilteredProducts.length > 0
-              ? sortedAndFilteredProducts.filter(product => sortLoc.includes(product.LocationNumber)).map((product, index) => (
-                  <tr
-                    key={product.id}
-                    onClick={() => onProductSelect(product)}
-                    className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
-                      product.id,
-                      product
-                    )}`}
-                    style={{
-                      animationDelay: `${index * 50}ms`,
-                      animation: "fadeIn 0.3s ease-out forwards",
-                    }}
+            {isAddingRow && (
+              <tr className="border-b border-gray-200 bg-yellow-50">
+                <td className="px-6 py-4">
+                  <input
+                    type="text"
+                    value={newProduct.StockShipped}
+                    onChange={(e) =>
+                      handleNewProductChange("StockShipped", e.target.value)
+                    }
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+                    placeholder="Model..."
+                    autoFocus
+                  />
+                </td>
+                <td className="px-6 py-4">
+                  <input
+                    type="text"
+                    value={newProduct.Description1}
+                    onChange={(e) =>
+                      handleNewProductChange("Description1", e.target.value)
+                    }
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Description..."
+                  />
+                </td>
+                <td className="px-6 py-4">
+                  <select
+                    value={newProduct.QuantityToShip}
+                    onChange={(e) =>
+                      handleNewProductChange("QuantityToShip", e.target.value)
+                    }
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Quantity..."
                   >
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm font-medium text-gray-900">
-                          {product.StockShipped}
-                        </span>
-                        {getMatchIcon(product.id)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-gray-700">
-                      {product.Description1}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700">
-                      {product.QuantityToShip}
-                    </td>
-                    <td className="px-4 py-2 text-gray-700">
-                      {product.LocationNumber}
-                    </td>
-                    {/* added serial number editing below */}
-                    <td className="px-4 py-2">
-                      {(() => {
-                        // prefer local inputs (most recent edit), otherwise coerce product.SerialNumber to array
-                        const serialList =
-                          serialInputs[product.id] ??
-                          (Array.isArray(product.SerialNumber)
-                            ? product.SerialNumber
-                            : product.SerialNumber
-                            ? [product.SerialNumber]
-                            : []);
+                    <option value="">Select Quantity...</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    </select>
+                </td>
+                <td className="px-6 py-4">
+                  <select
+                    value={newProduct.LocationNumber}
+                    onChange={(e) =>
+                      handleNewProductChange("LocationNumber", e.target.value)
+                    }
+                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Location..."
+                  >
+                    <option value="">Select Location...</option>
+                    <option value="001">001</option>
+                    <option value="200">200</option>
+                    <option value="300">300</option>
+                    <option value="400">400</option>
+                    <option value="500">500</option>
+                    <option value="600">600</option>
+                    <option value="700">700</option>
+                    </select>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleSaveNewProduct}
+                      disabled={
+                        !newProduct.StockShipped ||
+                        !newProduct.Description1 ||
+                        !newProduct.QuantityToShip ||
+                        !newProduct.LocationNumber
+                      }
+                      className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 disabled:text-gray-400 disabled:cursor-not-allowed rounded transition-colors"
+                      title="Save product"
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleCancelNewProduct}
+                      className="p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                      title="Cancel"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )}
+            {sortedAndFilteredProducts.length > 0
+              ? sortedAndFilteredProducts
+                  .filter((product) => sortLoc.includes(product.LocationNumber))
+                  .map((product, index) => (
+                    <tr
+                      key={product.id}
+                      onClick={() => onProductSelect(product)}
+                      className={`border-b border-gray-200 transition-all duration-200 ${getRowClassName(
+                        product.id,
+                        product,
+                      )}`}
+                      style={{
+                        animationDelay: `${index * 50}ms`,
+                        animation: "fadeIn 0.3s ease-out forwards",
+                      }}
+                    >
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-medium text-gray-900">
+                            {product.StockShipped}
+                          </span>
+                          {getMatchIcon(product.id)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-gray-700">
+                        {product.Description1}
+                      </td>
+                      <td className="px-4 py-2 text-gray-700">
+                        {product.QuantityToShip}
+                      </td>
+                      <td className="px-4 py-2 text-gray-700">
+                        {product.LocationNumber}
+                      </td>
+                      {/* added serial number editing below */}
+                      <td className="px-4 py-2">
+                        {(() => {
+                          // prefer local inputs (most recent edit), otherwise coerce product.SerialNumber to array
+                          const serialList =
+                            serialInputs[product.id] ??
+                            (Array.isArray(product.SerialNumber)
+                              ? product.SerialNumber
+                              : product.SerialNumber
+                                ? [product.SerialNumber]
+                                : []);
 
-                        return serialList.map((sn, idx) => {
-                          const existing =
-                            serialInputs[product.id] &&
-                            serialInputs[product.id][idx];
-                          const value =
-                            existing ??
-                            (typeof sn === "object" ? sn.serial : sn) ??
-                            "";
+                          return serialList.map((sn, idx) => {
+                            const existing =
+                              serialInputs[product.id] &&
+                              serialInputs[product.id][idx];
+                            const value =
+                              existing ??
+                              (typeof sn === "object" ? sn.serial : sn) ??
+                              "";
 
-                          if (editingSerial[product.id]) {
+                            if (editingSerial[product.id]) {
+                              return (
+                                <div
+                                  key={`${product.id}-sn-${idx}`}
+                                  className="flex items-center gap-2"
+                                >
+                                  <input
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) =>
+                                      handleSerialInputChange(
+                                        product.id,
+                                        idx,
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Enter serial..."
+                                    autoFocus={idx === 0}
+                                  />
+                                  <button
+                                    onClick={() =>
+                                      handleSerialSave(product.id, idx)
+                                    }
+                                    className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                                    title="Save"
+                                  >
+                                    <Save className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleSerialCancel(product.id)
+                                    }
+                                    className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                                    title="Cancel"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              );
+                            }
+
                             return (
                               <div
                                 key={`${product.id}-sn-${idx}`}
                                 className="flex items-center gap-2"
                               >
-                                <input
-                                  type="text"
-                                  value={value}
-                                  onChange={(e) =>
-                                    handleSerialInputChange(
-                                      product.id,
-                                      idx,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Enter serial..."
-                                  autoFocus={idx === 0}
-                                />
+                                <span className="font-mono text-sm text-gray-700 min-w-[100px]">
+                                  {value}
+                                </span>
                                 <button
                                   onClick={() =>
-                                    handleSerialSave(product.id, idx)
+                                    handleSerialEdit(
+                                      product.id,
+                                      product.SerialNumber,
+                                    )
                                   }
-                                  className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
-                                  title="Save"
+                                  className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  title="Edit serial number"
                                 >
-                                  <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleSerialCancel(product.id)}
-                                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded transition-colors"
-                                  title="Cancel"
-                                >
-                                  ×
+                                  <Edit3 className="w-4 h-4" />
                                 </button>
                               </div>
                             );
-                          }
-
-                          return (
-                            <div
-                              key={`${product.id}-sn-${idx}`}
-                              className="flex items-center gap-2"
-                            >
-                              <span className="font-mono text-sm text-gray-700 min-w-[100px]">
-                                {value}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleSerialEdit(
-                                    product.id,
-                                    product.SerialNumber
-                                  )
-                                }
-                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                title="Edit serial number"
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          );
-                        });
-                      })()}
-                    </td>
-                  </tr>
-                ))
+                          });
+                        })()}
+                      </td>
+                    </tr>
+                  ))
               : ((
                   <tr className="justify-center">
                     <td
