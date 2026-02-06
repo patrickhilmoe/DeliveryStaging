@@ -275,8 +275,8 @@ function App() {
         typeof imageData === "string" ? imageData : await toBase64(imageData);
       const base64Image = dataUrl.replace(/^data:image\/[a-zA-Z]+;base64,/, "");
 
-      // const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
-      const apiKey = process.env.REACT_APP_OCR_API_KEY;
+      const apiKey = "AIzaSyCpdX3mF1XyM7J-9IElR0IzM2Hg5KQGKKs";
+      // const apiKey = process.env.REACT_APP_OCR_API_KEY;
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
 
       const requestData = {
