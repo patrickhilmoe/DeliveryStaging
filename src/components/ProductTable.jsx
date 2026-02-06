@@ -29,7 +29,7 @@ export const ProductTable = ({
   const [sortOrder, setSortOrder] = useState("asc");
   const [editingSerial, setEditingSerial] = useState({});
   const [serialInputs, setSerialInputs] = useState({});
-  const [sortLoc, setSortLoc] = useState(["001"]);
+  const [sortLoc, setSortLoc] = useState(["001", "200", "300+", "400+", "500+", "600+", "700+"]);
   const [isAddingRow, setIsAddingRow] = useState(false);
   const [newProduct, setNewProduct] = useState({
     StockShipped: "",
