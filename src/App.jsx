@@ -17,11 +17,14 @@ import {
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import signout from "./assets/icon-sign-out.svg";
 import { downloadProductsAsCSV } from "./utils/csvExport";
+import { Hatch } from "ldrs/react";
+import "ldrs/react/Hatch.css";
 
 function App() {
   const [extractedText, setExtractedText] = useState("");
   const [matchedProducts, setMatchedProducts] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [processingStatus, setProcessingStatus] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -71,12 +74,16 @@ function App() {
       await setDoc(doc(db, collectionPath, `${collectionPath}-${obj.id}`), obj);
     }
     console.log("Objects uploaded as separate documents successfully!");
+    setIsUploading(false);
   }
 
-    async function uploadObjectsAsDocsAdd(collectionPath, object) {
+  async function uploadObjectsAsDocsAdd(collectionPath, object) {
     console.log("Uploading objects to collection:", collectionPath, object);
     const collectionRef = collection(db, collectionPath);
-      await setDoc(doc(db, collectionPath, `${collectionPath}-${object.id}`), object);
+    await setDoc(
+      doc(db, collectionPath, `${collectionPath}-${object.id}`),
+      object,
+    );
 
     console.log("Objects uploaded as separate documents successfully!");
   }
@@ -137,6 +144,7 @@ function App() {
   };
 
   const uploadData = (data) => {
+    setIsUploading(true);
     console.log("Uploading data...", data);
     // Clean keys of stock data from Excel upload
     let id = 0;
@@ -604,6 +612,13 @@ function App() {
             </button>
           </div>
         </div>
+        {/* When uploading to firebase */}
+        {isUploading && (
+          <div className="flex flex-row items-center justify-center gap-4 mb-6">
+            <h2 className="text-xl font-semibold text-gray-800">Uploading...</h2>
+            <Hatch size={50} speed={4.5} bgOpacity={0.25} />
+          </div>
+        )}
         <div className="transition-all duration-500">
           {/* Header */}
           <div className="text-center mb-8">

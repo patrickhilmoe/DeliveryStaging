@@ -1,14 +1,11 @@
 **Progress Notes**
 
 notes:
-adding and removing product
-    -changing headers
-    -POST to firestore
-700 and 500+ etc, not showing up...
-
 cycle API keys
 
+quality of life:
 highlight install lines
+upload successful alert
 
 results from testing
 GE serial numbers sometimes have an extra letter at the end
