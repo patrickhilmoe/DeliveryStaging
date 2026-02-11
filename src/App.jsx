@@ -43,16 +43,6 @@ function App() {
   // firebase start
   // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // const firebaseConfig = {
-  //   apiKey: "AIzaSyC3qPVaaBjUhUG5dtAgjzLEQGoCopDYhxU",
-  //   authDomain: "dandbcheckofftest.firebaseapp.com",
-  //   projectId: "dandbcheckofftest",
-  //   storageBucket: "dandbcheckofftest.firebasestorage.app",
-  //   messagingSenderId: "230556784113",
-  //   appId: "1:230556784113:web:e5ffdc10d56d189733a050",
-  // };
-
     const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -66,6 +56,8 @@ function App() {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+
+  // console.log(projectId)
 
   async function uploadObjectsAsDocs(collectionPath, objects) {
     console.log("Uploading objects to collection:", collectionPath, objects);
