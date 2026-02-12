@@ -52,8 +52,6 @@ function App() {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
   };
 
-  console.log("project id is: ", import.meta.env.VITE_FIREBASE_PROJECT_ID);
-
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
