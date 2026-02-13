@@ -82,7 +82,7 @@ export const ProductTable = ({
     if (!product?.SerialNumber.includes("nsy")) {
       return "bg-green-50 border-green-200 shadow-sm ring-1 ring-green-200";
     }
-    else if (product.Salesperson.indexOf("INSTALL") !== -1) {
+    else if ((product.Salesperson || "").indexOf("INSTALL") !== -1) {
       return "bg-purple-50 border-purple-200 shadow-sm ring-1 ring-purple-200";
     }
     else if (selectedProduct?.id === id) {
