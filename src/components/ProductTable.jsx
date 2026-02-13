@@ -47,10 +47,10 @@ export const ProductTable = ({
     if (searchQuery) {
       filtered = products.filter(
         (product) =>
-          product.StockShipped.toLowerCase().includes(
+          (product.StockShipped || "").toLowerCase().includes(
             searchQuery.toLowerCase(),
           ) ||
-          product.Description1.toLowerCase().includes(
+          (product.Description1 || "").toLowerCase().includes(
             searchQuery.toLowerCase(),
           ),
         //|| product.category.toLowerCase().includes(searchQuery.toLowerCase())

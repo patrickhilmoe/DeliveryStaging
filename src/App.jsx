@@ -155,12 +155,15 @@ function App() {
       updatedKeysStockObj.SerialNumber = []; // add empty SN field for later update
       // create an object with multiple serial numbers if quantity > 1
       let qty = 1;
-      console.log(
-        "qty to ship is value of: ",
-        typeof updatedKeysStockObj.QuantityToShip,
-        "length is: ",
-        updatedKeysStockObj.QuantityToShip.length,
-      );
+      if (!(typeof updatedKeysStockObj.LocationNumber === "string")) {
+        updatedKeysStockObj.LocationNumber = String(updatedKeysStockObj.LocationNumber);
+      }
+      // console.log(
+      //   "qty to ship is value of: ",
+      //   typeof updatedKeysStockObj.QuantityToShip,
+      //   "length is: ",
+      //   updatedKeysStockObj.QuantityToShip.length,
+      // );
       if (updatedKeysStockObj.QuantityToShip.length > 2) {
         let splitQty = updatedKeysStockObj.QuantityToShip.split(" ");
         qty = splitQty[0];
